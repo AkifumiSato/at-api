@@ -1,5 +1,5 @@
 use actix_web::{
-    middleware, web, App, HttpResponse, HttpServer,
+    middleware::Logger, web, App, HttpResponse, HttpServer,
 };
 use serde::{Deserialize, Serialize};
 
@@ -19,8 +19,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
-            // enable logger
-            .wrap(middleware::Logger::default())
+            .wrap(Logger::default())
             .data(web::JsonConfig::default().limit(4096)) // <- limit size of the payload (global configuration)
             .service(web::resource("/").route(web::post().to(index)))
     })
