@@ -10,13 +10,11 @@ struct MyObj {
 }
 
 async fn index(item: web::Json<MyObj>) -> HttpResponse {
-    println!("model: {:?}", &item);
-    HttpResponse::Ok().json(item.0) // <- send response
+    HttpResponse::Ok().json(item.0)
 }
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    std::env::set_var("RUST_LOG", "actix_web=info");
     env_logger::init();
 
     HttpServer::new(|| {
