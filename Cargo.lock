@@ -260,17 +260,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "actix-web-demo"
-version = "0.1.0"
-dependencies = [
- "actix-rt",
- "actix-service",
- "actix-web",
- "env_logger",
- "serde",
-]
-
-[[package]]
 name = "addr2line"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -981,6 +970,16 @@ dependencies = [
  "net2",
  "winapi 0.2.8",
  "ws2_32-sys",
+]
+
+[[package]]
+name = "my_app"
+version = "0.1.0"
+dependencies = [
+ "actix-rt",
+ "actix-web",
+ "env_logger",
+ "serde",
 ]
 
 [[package]]
