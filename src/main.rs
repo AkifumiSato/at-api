@@ -26,7 +26,7 @@ async fn main() -> std::io::Result<()> {
             .data(web::JsonConfig::default().limit(4096)) // <- limit size of the payload (global configuration)
             .service(web::resource("/").route(web::post().to(index)))
     })
-        .bind("127.0.0.1:8080")?
+        .bind("0.0.0.0:8088")?
         .run()
         .await
 }

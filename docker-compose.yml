@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  backend:
+    build:
+      context: .
+      target: 'develop-stage'
+    ports:
+      - "8088:8088"
+    volumes:
+      - .:/app
+      - cargo-cache:/usr/local/cargo/registry
+      - target-cache:/app/target
+    command: cargo watch -x run
+
+volumes:
+  cargo-cache:
+  target-cache:
