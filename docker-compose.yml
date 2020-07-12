@@ -7,14 +7,29 @@ services:
       target: 'develop-stage'
     ports:
       - "8088:8088"
+    depends_on:
+      - db
     environment:
       - RUST_LOG=actix_web=debug
     volumes:
       - .:/app
       - cargo-cache:/usr/local/cargo/registry
       - target-cache:/app/target
-    command: cargo watch -x run
+    command: bash -c "diesel setup && cargo watch -x run"
+  db:
+    build:
+      context: .
+      target: 'db'
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdate:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: dockerpassword
+      POSTGRES_USER: docker
+    restart: always
 
 volumes:
   cargo-cache:
   target-cache:
+  pgdate:
