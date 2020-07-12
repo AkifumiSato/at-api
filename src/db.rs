@@ -1,6 +1,7 @@
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use dotenv::dotenv;
+use serde::{Deserialize, Serialize};
 use std::env;
 use super::schema::posts;
 
@@ -14,13 +15,13 @@ pub fn establish_connection() -> PgConnection {
 }
 
 #[derive(Insertable)]
-#[table_name="posts"]
+#[table_name = "posts"]
 pub struct NewPost<'a> {
     pub title: &'a str,
     pub body: &'a str,
 }
 
-#[derive(Queryable)]
+#[derive(Debug, Queryable, Serialize, Deserialize)]
 pub struct Post {
     pub id: i32,
     pub title: String,
@@ -31,5 +32,21 @@ pub struct Post {
 pub fn create_post<'a>(connection: &PgConnection, post: NewPost) -> Result<Post, diesel::result::Error> {
     diesel::insert_into(posts::table)
         .values(post)
+        .get_result::<Post>(connection)
+}
+
+pub fn show_post<'a>(connection: &PgConnection) -> Result<Vec<Post>, diesel::result::Error> {
+    use super::schema::posts::dsl::*;
+
+    posts.filter(published.eq(true))
+        .limit(5)
+        .load::<Post>(connection)
+}
+
+pub fn publish_post<'a>(connection: &PgConnection, target_id: i32) -> Result<Post, diesel::result::Error> {
+    use super::schema::posts::dsl::*;
+
+    diesel::update(posts.find(target_id))
+        .set(published.eq(true))
         .get_result::<Post>(connection)
 }
