@@ -4,19 +4,13 @@ use actix_web::{
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-struct MyObj {
+pub struct MyObj {
     name: String,
     number: i32,
 }
 
-async fn index(item: web::Json<MyObj>) -> HttpResponse {
+pub async fn index(item: web::Json<MyObj>) -> HttpResponse {
     HttpResponse::Ok().json(item.0)
-}
-
-pub fn config(cfg: &mut web::ServiceConfig) {
-    cfg.service(
-        web::resource("/").route(web::post().to(index))
-    );
 }
 
 #[cfg(test)]

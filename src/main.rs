@@ -3,7 +3,7 @@ extern crate my_app;
 use actix_web::{
     middleware::Logger, web, App, HttpServer,
 };
-use my_app::bookmark;
+use my_app::routes;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -12,8 +12,8 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             .wrap(Logger::default())
-            .data(web::JsonConfig::default().limit(4096)) // <- limit size of the payload (global configuration)
-            .service(web::scope("/bookmark").configure(bookmark::config))
+            .data(web::JsonConfig::default().limit(4096))
+            .service(web::scope("/").configure(routes::config))
     })
         .bind("0.0.0.0:8088")?
         .run()
