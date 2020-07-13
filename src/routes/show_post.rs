@@ -42,23 +42,30 @@ mod tests {
         )
             .await;
 
+        // status test
         let req = test::TestRequest::post()
             .uri("/")
-            .set_json(&MyObj {
-                name: "my-name".to_owned(),
-                number: 43,
+            .set_json(&PostJson {
+                page: None,
+                count: 5,
             })
             .to_request();
         let resp = app.call(req).await.unwrap();
 
         assert_eq!(resp.status(), http::StatusCode::OK);
 
-        let response_body = match resp.response().body().as_ref() {
-            Some(actix_web::body::Body::Bytes(bytes)) => bytes,
-            _ => panic!("Response error"),
-        };
-
-        assert_eq!(response_body, r##"{"name":"my-name","number":43}"##);
+        // response test
+        let req = test::TestRequest::post()
+            .uri("/")
+            .set_json(&PostJson {
+                page: None,
+                count: 5,
+            })
+            .to_request();
+        let resp: Response = test::read_response_json(&mut app, req).await;
+        resp.result.iter().for_each(|post| {
+            assert_eq!(post.id, 4);
+        });
 
         Ok(())
     }
