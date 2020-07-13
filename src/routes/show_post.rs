@@ -1,23 +1,28 @@
-use actix_web::{HttpResponse};
+use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
 use crate::db::{establish_connection, show_post, Post};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct MyObj {
-    name: String,
-    number: i32,
+pub struct PostJson {
+    page: Option<i64>,
+    count: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct PostJson {
+pub struct Response {
     result: Vec<Post>,
 }
 
-pub async fn index() -> HttpResponse {
+pub async fn index(item: web::Json<PostJson>) -> HttpResponse {
     let connection = establish_connection();
 
-    match show_post(&connection) {
-        Ok(posts) => HttpResponse::Ok().json(PostJson {
+    let page = match item.page {
+        Some(x) => x,
+        None => 1,
+    };
+
+    match show_post(&connection, item.count, page) {
+        Ok(posts) => HttpResponse::Ok().json(Response {
             result: posts
         }),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),

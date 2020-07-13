@@ -35,11 +35,14 @@ pub fn create_post<'a>(connection: &PgConnection, post: NewPost) -> Result<Post,
         .get_result::<Post>(connection)
 }
 
-pub fn show_post<'a>(connection: &PgConnection) -> Result<Vec<Post>, diesel::result::Error> {
+pub fn show_post<'a>(connection: &PgConnection, count: i64, page: i64) -> Result<Vec<Post>, diesel::result::Error> {
     use super::schema::posts::dsl::*;
 
+    let offset = count * (page - 1);
+
     posts.filter(published.eq(true))
-        .limit(5)
+        .limit(count)
+        .offset(offset)
         .load::<Post>(connection)
 }
 
