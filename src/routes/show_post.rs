@@ -64,7 +64,7 @@ mod tests {
             .to_request();
         let resp: Response = test::read_response_json(&mut app, req).await;
         resp.result.iter().for_each(|post| {
-            assert_eq!(post.id, 4);
+            assert_eq!(post.id, 1);
         });
 
         Ok(())
