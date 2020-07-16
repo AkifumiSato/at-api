@@ -4,6 +4,7 @@ use dotenv::dotenv;
 use serde::{Deserialize, Serialize};
 use std::env;
 use super::schema::posts;
+use super::schema::posts::dsl;
 
 pub fn establish_connection() -> PgConnection {
     dotenv().ok();
@@ -36,22 +37,18 @@ pub fn create_post<'a>(connection: &PgConnection, post: NewPost) -> Result<Post,
 }
 
 pub fn show_post<'a>(connection: &PgConnection, count: i64, page: i64) -> Result<Vec<Post>, diesel::result::Error> {
-    use super::schema::posts::dsl::*;
-
     let offset = count * (page - 1);
 
-    posts.filter(published.eq(true))
+    dsl::posts.filter(dsl::published.eq(true))
         .limit(count)
         .offset(offset)
-        .order(id.desc())
+        .order(dsl::id.desc())
         .load::<Post>(connection)
 }
 
 pub fn publish_post<'a>(connection: &PgConnection, target_id: i32) -> Result<Post, diesel::result::Error> {
-    use super::schema::posts::dsl::*;
-
-    diesel::update(posts.find(target_id))
-        .set(published.eq(true))
+    diesel::update(dsl::posts.find(target_id))
+        .set(dsl::published.eq(true))
         .get_result::<Post>(connection)
 }
 
