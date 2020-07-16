@@ -1,4 +1,5 @@
 use diesel::prelude::*;
+use diesel::r2d2::{self, ConnectionManager};
 use diesel::pg::PgConnection;
 use dotenv::dotenv;
 use serde::{Deserialize, Serialize};
@@ -6,13 +7,12 @@ use std::env;
 use super::schema::posts;
 use super::schema::posts::dsl;
 
-pub fn establish_connection() -> PgConnection {
-    dotenv().ok();
+pub type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
-    let database_url = env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
-    PgConnection::establish(&database_url)
-        .expect(&format!("Error connecting to {}", database_url))
+pub fn env_var_url() -> String {
+    dotenv().ok();
+    env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set")
 }
 
 #[derive(Insertable)]
@@ -57,7 +57,9 @@ mod test {
     use super::*;
 
     fn init() -> PgConnection {
-        let db = establish_connection();
+        let database_url = env_var_url();
+        let db = PgConnection::establish(&database_url)
+            .expect(&format!("Error connecting to {}", database_url));
         db.begin_test_transaction().unwrap();
         db
     }
