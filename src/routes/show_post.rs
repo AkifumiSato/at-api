@@ -35,44 +35,41 @@ pub async fn index(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use actix_web::dev::Service;
-    use actix_web::{http, test, Error, web, App};
-    use diesel::r2d2::{self, ConnectionManager};
+    use actix_web::{Error, http, web};
+    use diesel::r2d2::{self, ConnectionManager, CustomizeConnection};
     use diesel::pg::PgConnection;
+    use crate::db::env_database_url;
+    use diesel::Connection;
+
+    #[derive(Debug)]
+    struct TestTransaction;
+
+    impl CustomizeConnection<PgConnection, r2d2::Error> for TestTransaction {
+        fn on_acquire(
+            &self,
+            conn: &mut PgConnection,
+        ) -> ::std::result::Result<(), r2d2::Error> {
+            conn.begin_test_transaction().unwrap();
+            Ok(())
+        }
+    }
 
     #[actix_rt::test]
-    #[ignore]
     async fn test_index() -> Result<(), Error> {
-        // todo: dummy pool connection add
-        let mut app = test::init_service(
-            App::new().route("/", web::post().to(index)),
-        )
-            .await;
+        let manager = ConnectionManager::<PgConnection>::new(env_database_url());
+        let pool: DbPool = r2d2::Pool::builder()
+            .connection_customizer(Box::new(TestTransaction))
+            .build(manager)
+            .expect("Failed to init pool");
 
-        // status test
-        let req = test::TestRequest::post()
-            .uri("/")
-            .set_json(&PostJson {
-                page: None,
-                count: 5,
-            })
-            .to_request();
-        let resp = app.call(req).await.unwrap();
+        let pool_data = web::Data::new(pool);
+        let item_data = web::Json(PostJson {
+            page: Some(1),
+            count: 1,
+        });
+        let resp = index(pool_data, item_data).await;
 
         assert_eq!(resp.status(), http::StatusCode::OK);
-
-        // response test
-        let req = test::TestRequest::post()
-            .uri("/")
-            .set_json(&PostJson {
-                page: None,
-                count: 5,
-            })
-            .to_request();
-        let resp: Response = test::read_response_json(&mut app, req).await;
-        resp.result.iter().for_each(|post| {
-            assert_eq!(post.id, 1);
-        });
 
         Ok(())
     }

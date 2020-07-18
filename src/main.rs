@@ -6,13 +6,13 @@ use actix_web::{
 use diesel::r2d2::{self, ConnectionManager};
 use diesel::pg::PgConnection;
 use my_app::routes;
-use my_app::db::env_var_url;
+use my_app::db::env_database_url;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     env_logger::init();
 
-    let database_url = env_var_url();
+    let database_url = env_database_url();
 
     let manager = ConnectionManager::<PgConnection>::new(database_url);
     let pool = r2d2::Pool::builder()

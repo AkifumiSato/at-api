@@ -9,7 +9,7 @@ use super::schema::posts::dsl;
 
 pub type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
-pub fn env_var_url() -> String {
+pub fn env_database_url() -> String {
     dotenv().ok();
     env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set")
@@ -57,7 +57,7 @@ mod test {
     use super::*;
 
     fn init() -> PgConnection {
-        let database_url = env_var_url();
+        let database_url = env_database_url();
         let db = PgConnection::establish(&database_url)
             .expect(&format!("Error connecting to {}", database_url));
         db.begin_test_transaction().unwrap();
