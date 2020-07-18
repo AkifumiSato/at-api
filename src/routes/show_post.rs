@@ -21,7 +21,7 @@ impl PostJson {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Response {
-    result: Vec<Post>,
+    pub result: Vec<Post>,
 }
 
 pub async fn index(
