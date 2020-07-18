@@ -36,23 +36,9 @@ pub async fn index(
 mod tests {
     use super::*;
     use actix_web::{Error, http, web};
-    use diesel::r2d2::{self, ConnectionManager, CustomizeConnection};
+    use diesel::r2d2::{self, ConnectionManager};
     use diesel::pg::PgConnection;
-    use crate::db::env_database_url;
-    use diesel::Connection;
-
-    #[derive(Debug)]
-    struct TestTransaction;
-
-    impl CustomizeConnection<PgConnection, r2d2::Error> for TestTransaction {
-        fn on_acquire(
-            &self,
-            conn: &mut PgConnection,
-        ) -> ::std::result::Result<(), r2d2::Error> {
-            conn.begin_test_transaction().unwrap();
-            Ok(())
-        }
-    }
+    use crate::db::{env_database_url, TestTransaction};
 
     #[actix_rt::test]
     async fn test_index() -> Result<(), Error> {
