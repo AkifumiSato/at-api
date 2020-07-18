@@ -8,6 +8,17 @@ pub struct PostJson {
     body: String,
 }
 
+impl PostJson {
+    /// mod.tsでシナリオテストするために利用.
+    #[allow(dead_code)]
+    pub fn new(title: &str, body: &str) -> PostJson {
+        PostJson {
+            title: title.to_string(),
+            body: body.to_string(),
+        }
+    }
+}
+
 pub async fn index(
     pool: web::Data<DbPool>,
     item: web::Json<PostJson>

@@ -19,10 +19,15 @@ mod tests {
     use actix_web::{test, http, web, App, Error};
     use diesel::r2d2::{self, ConnectionManager};
     use diesel::pg::PgConnection;
-    use crate::db::{env_database_url, TestTransaction, DbPool};
+    use crate::db::{self, env_database_url, TestTransaction, DbPool};
 
+    /// # scenario
+    ///
+    /// 1. create
+    /// 2. publish
+    /// 3. show
     #[actix_rt::test]
-    async fn test_show() {
+    async fn test_scenario() {
         let manager = ConnectionManager::<PgConnection>::new(env_database_url());
         let pool: DbPool = r2d2::Pool::builder()
             .connection_customizer(Box::new(TestTransaction))
@@ -37,6 +42,22 @@ mod tests {
         ).await;
 
         let req = test::TestRequest::post()
+            .uri("/posts/create/")
+            .set_json(&create_post::PostJson::new("unit test title", "unit test body"))
+            .to_request();
+        let resp: db::Post = test::read_response_json(&mut app, req).await;
+        let id = resp.id;
+        assert_eq!("unit test title", resp.title);
+        assert_eq!("unit test body", resp.body);
+
+        let req = test::TestRequest::post()
+            .uri("/posts/publish/")
+            .set_json(&publish_post::PostJson::new(id))
+            .to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert!(resp.status().is_success());
+
+        let req = test::TestRequest::post()
             .uri("/posts/show/")
             .set_json(&show_post::PostJson::new(None, 1))
             .to_request();
@@ -49,5 +70,6 @@ mod tests {
             .to_request();
         let resp: show_post::Response = test::read_response_json(&mut app, req).await;
         assert_eq!(1, resp.result.iter().len());
+        assert_eq!(id, resp.result.first().unwrap().id);
     }
 }
