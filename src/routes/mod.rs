@@ -16,10 +16,18 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use actix_web::{test, http, web, App, Error};
+    use actix_web::{test, web, App};
     use diesel::r2d2::{self, ConnectionManager};
     use diesel::pg::PgConnection;
     use crate::db::{self, env_database_url, TestTransaction, DbPool};
+
+    fn setup_connection_pool() -> DbPool  {
+        let manager = ConnectionManager::<PgConnection>::new(env_database_url());
+        r2d2::Pool::builder()
+            .connection_customizer(Box::new(TestTransaction))
+            .build(manager)
+            .expect("Failed to init pool")
+    }
 
     /// # scenario
     ///
@@ -28,11 +36,7 @@ mod tests {
     /// 3. show
     #[actix_rt::test]
     async fn test_scenario() {
-        let manager = ConnectionManager::<PgConnection>::new(env_database_url());
-        let pool: DbPool = r2d2::Pool::builder()
-            .connection_customizer(Box::new(TestTransaction))
-            .build(manager)
-            .expect("Failed to init pool");
+        let pool = setup_connection_pool();
 
         let mut app = test::init_service(
             App::new()
@@ -53,13 +57,6 @@ mod tests {
         let req = test::TestRequest::post()
             .uri("/posts/publish/")
             .set_json(&publish_post::PostJson::new(id))
-            .to_request();
-        let resp = test::call_service(&mut app, req).await;
-        assert!(resp.status().is_success());
-
-        let req = test::TestRequest::post()
-            .uri("/posts/show/")
-            .set_json(&show_post::PostJson::new(None, 1))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
