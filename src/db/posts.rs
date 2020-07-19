@@ -19,26 +19,38 @@ pub struct Post {
     pub published: bool,
 }
 
-pub fn create_post<'a>(connection: &PgConnection, post: NewPost) -> Result<Post, diesel::result::Error> {
-    diesel::insert_into(posts::table)
-        .values(post)
-        .get_result::<Post>(connection)
+pub struct PostTable<'a> {
+    connection: &'a PgConnection,
 }
 
-pub fn show_post<'a>(connection: &PgConnection, count: i64, page: i64) -> Result<Vec<Post>, diesel::result::Error> {
-    let offset = count * (page - 1);
+impl<'a> PostTable<'a> {
+    pub fn new(connection: &'a PgConnection) -> PostTable<'a> {
+        PostTable {
+            connection,
+        }
+    }
 
-    dsl::posts.filter(dsl::published.eq(true))
-        .limit(count)
-        .offset(offset)
-        .order(dsl::id.desc())
-        .load::<Post>(connection)
-}
+    pub fn create(&self, post: NewPost) -> Result<Post, diesel::result::Error> {
+        diesel::insert_into(posts::table)
+            .values(post)
+            .get_result::<Post>(self.connection)
+    }
 
-pub fn publish_post<'a>(connection: &PgConnection, target_id: i32) -> Result<Post, diesel::result::Error> {
-    diesel::update(dsl::posts.find(target_id))
-        .set(dsl::published.eq(true))
-        .get_result::<Post>(connection)
+    pub fn show(&self, count: i64, page: i64) -> Result<Vec<Post>, diesel::result::Error> {
+        let offset = count * (page - 1);
+
+        dsl::posts.filter(dsl::published.eq(true))
+            .limit(count)
+            .offset(offset)
+            .order(dsl::id.desc())
+            .load::<Post>(self.connection)
+    }
+
+    pub fn publish(&self, target_id: i32) -> Result<Post, diesel::result::Error> {
+        diesel::update(dsl::posts.find(target_id))
+            .set(dsl::published.eq(true))
+            .get_result::<Post>(self.connection)
+    }
 }
 
 #[cfg(test)]
@@ -57,24 +69,25 @@ mod test {
     #[test]
     fn scenario() {
         let connection = init();
+        let post_table = PostTable::new(&connection);
 
         let new_post1 = NewPost {
             title: "unit test title111",
             body: "unit test body111",
         };
 
-        let created_posts = create_post(&connection, new_post1).unwrap();
-        let _published_post = publish_post(&connection, created_posts.id);
+        let created_posts = post_table.create(new_post1).unwrap();
+        let _published_post = post_table.publish(created_posts.id);
 
         let new_post2 = NewPost {
             title: "unit test title222",
             body: "unit test body222",
         };
 
-        let created_posts = create_post(&connection, new_post2).unwrap();
-        let _published_post = publish_post(&connection, created_posts.id);
+        let created_posts = post_table.create(new_post2).unwrap();
+        let _published_post = post_table.publish(created_posts.id);
 
-        let posts = show_post(&connection, 2, 1).unwrap();
+        let posts = post_table.show(2, 1).unwrap();
 
         let result = posts
             .iter()

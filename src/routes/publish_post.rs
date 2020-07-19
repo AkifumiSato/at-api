@@ -1,6 +1,6 @@
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
-use crate::db::posts::{publish_post};
+use crate::db::posts::{PostTable};
 use crate::db::pool::DbPool;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -23,8 +23,9 @@ pub async fn index(
     item: web::Json<PostJson>,
 ) -> HttpResponse {
     let connection = pool.get().expect("couldn't get db connection from pool");
+    let post_table = PostTable::new(&connection);
 
-    match publish_post(&connection, item.id) {
+    match post_table.publish(item.id) {
         Ok(post) => HttpResponse::Ok().body(format!("post title is {}", post.title)),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

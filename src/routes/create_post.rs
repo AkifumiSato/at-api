@@ -1,6 +1,6 @@
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
-use crate::db::posts::{NewPost, create_post};
+use crate::db::posts::{NewPost, PostTable};
 use crate::db::pool::DbPool;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -25,13 +25,14 @@ pub async fn index(
     item: web::Json<PostJson>,
 ) -> HttpResponse {
     let connection = pool.get().expect("couldn't get db connection from pool");
+    let post_table = PostTable::new(&connection);
 
     let new_post = NewPost {
         title: &item.title,
         body: &item.body,
     };
 
-    match create_post(&connection, new_post) {
+    match post_table.create(new_post) {
         Ok(post) => HttpResponse::Ok().json(post),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
