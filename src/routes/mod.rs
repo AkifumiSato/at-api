@@ -1,6 +1,7 @@
 mod show_post;
 mod create_post;
 mod publish_post;
+mod update_post;
 
 use actix_web::web;
 
@@ -10,6 +11,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route("/show/", web::post().to(show_post::index))
             .route("/create/", web::post().to(create_post::index))
             .route("/publish/", web::post().to(publish_post::index))
+            .route("/update/", web::post().to(update_post::index))
     );
 }
 
@@ -69,5 +71,13 @@ mod tests {
         let resp: show_post::Response = test::read_response_json(&mut app, req).await;
         assert_eq!(1, resp.result.iter().len());
         assert_eq!(id, resp.result.first().unwrap().id);
+
+        let req = test::TestRequest::post()
+            .uri("/posts/update/")
+            .set_json(&update_post::PostJson::new(id, Some("update test title"), Some("update test body"), Some(true)))
+            .to_request();
+        let resp: posts::Post = test::read_response_json(&mut app, req).await;
+        assert_eq!("update test title", resp.title);
+        assert_eq!("update test body", resp.body);
     }
 }
