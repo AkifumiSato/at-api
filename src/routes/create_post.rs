@@ -27,10 +27,7 @@ pub async fn index(
     let connection = pool.get().expect("couldn't get db connection from pool");
     let post_table = PostTable::new(&connection);
 
-    let new_post = NewPost {
-        title: &item.title,
-        body: &item.body,
-    };
+    let new_post = NewPost::new(&item.title, &item.body);
 
     match post_table.create(new_post) {
         Ok(post) => HttpResponse::Ok().json(post),

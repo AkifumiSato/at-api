@@ -7,8 +7,17 @@ use crate::schema::posts::dsl;
 #[derive(Insertable)]
 #[table_name = "posts"]
 pub struct NewPost<'a> {
-    pub title: &'a str,
-    pub body: &'a str,
+    title: &'a str,
+    body: &'a str,
+}
+
+impl<'a> NewPost<'a> {
+    pub fn new(title: &'a str, body: &'a str) -> NewPost<'a> {
+        NewPost {
+            title,
+            body,
+        }
+    }
 }
 
 #[derive(Debug, Queryable, Serialize, Deserialize)]
@@ -71,18 +80,12 @@ mod test {
         let connection = init();
         let post_table = PostTable::new(&connection);
 
-        let new_post1 = NewPost {
-            title: "unit test title111",
-            body: "unit test body111",
-        };
+        let new_post1 = NewPost::new("unit test title111", "unit test body111");
 
         let created_posts = post_table.create(new_post1).unwrap();
         let _published_post = post_table.publish(created_posts.id);
 
-        let new_post2 = NewPost {
-            title: "unit test title222",
-            body: "unit test body222",
-        };
+        let new_post2 = NewPost::new("unit test title222", "unit test body222");
 
         let created_posts = post_table.create(new_post2).unwrap();
         let _published_post = post_table.publish(created_posts.id);
