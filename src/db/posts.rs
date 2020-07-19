@@ -22,6 +22,24 @@ impl<'a> NewPost<'a> {
     }
 }
 
+#[derive(AsChangeset)]
+#[table_name = "posts"]
+pub struct UpdatePost<'a> {
+    title: Option<&'a str>,
+    body: Option<&'a str>,
+    published: Option<bool>,
+}
+
+impl<'a> UpdatePost<'a> {
+    pub fn new(title: Option<&'a str>, body: Option<&'a str>, published: Option<bool>) -> UpdatePost<'a> {
+        UpdatePost {
+            title,
+            body,
+            published,
+        }
+    }
+}
+
 #[derive(Debug, Queryable, Serialize, Deserialize)]
 pub struct Post {
     pub id: i32,
@@ -47,6 +65,18 @@ impl<'a> PostTable<'a> {
             .get_result::<Post>(self.connection)
     }
 
+    pub fn update(&self, target_id: i32, update_post: UpdatePost) -> Result<Post, diesel::result::Error> {
+        diesel::update(dsl::posts.find(target_id))
+            .set(&update_post)
+            .get_result::<Post>(self.connection)
+    }
+
+    pub fn publish(&self, target_id: i32) -> Result<Post, diesel::result::Error> {
+        diesel::update(dsl::posts.find(target_id))
+            .set(dsl::published.eq(true))
+            .get_result::<Post>(self.connection)
+    }
+
     pub fn show(&self, count: i64, page: i64) -> Result<Vec<Post>, diesel::result::Error> {
         let offset = count * (page - 1);
 
@@ -55,12 +85,6 @@ impl<'a> PostTable<'a> {
             .offset(offset)
             .order(dsl::id.desc())
             .load::<Post>(self.connection)
-    }
-
-    pub fn publish(&self, target_id: i32) -> Result<Post, diesel::result::Error> {
-        diesel::update(dsl::posts.find(target_id))
-            .set(dsl::published.eq(true))
-            .get_result::<Post>(self.connection)
     }
 }
 
@@ -99,5 +123,12 @@ mod test {
             .collect::<Vec<String>>();
 
         assert_eq!(result, ["unit test title222", "unit test title111"]);
+
+        let update_post = UpdatePost::new(Some("update test title333"), Some("update test body333"), None);
+        let _result = post_table.update(created_posts2.id, update_post);
+        let posts = post_table.show(1, 1).unwrap();
+
+        assert_eq!(posts.first().unwrap().title, "update test title333");
+        assert_eq!(posts.first().unwrap().title, "update test body333");
     }
 }
