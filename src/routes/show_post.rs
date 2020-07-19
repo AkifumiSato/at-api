@@ -1,6 +1,7 @@
 use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
-use crate::db::posts::{show_post, Post, DbPool};
+use crate::db::posts::{show_post, Post};
+use crate::db::pool::DbPool;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PostJson {
@@ -26,7 +27,7 @@ pub struct Response {
 
 pub async fn index(
     pool: web::Data<DbPool>,
-    item: web::Json<PostJson>
+    item: web::Json<PostJson>,
 ) -> HttpResponse {
     let connection = pool.get().expect("couldn't get db connection from pool");
 
