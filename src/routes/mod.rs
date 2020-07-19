@@ -48,7 +48,7 @@ mod tests {
 
         let req = test::TestRequest::post()
             .uri("/posts/create/")
-            .set_json(&create_post::PostJson::new("unit test title", "unit test body"))
+            .set_json(&create_post::PostJson::new("unit test title", "unit test body", None))
             .to_request();
         let resp: posts::Post = test::read_response_json(&mut app, req).await;
         let id = resp.id;

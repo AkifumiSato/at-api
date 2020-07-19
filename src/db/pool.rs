@@ -23,10 +23,11 @@ pub fn env_database_url() -> String {
 /// use my_app::db::pool::{env_database_url, TestTransaction, DbPool};
 ///
 /// let manager = ConnectionManager::<PgConnection>::new(env_database_url());
-/// let pool: DbPool = r2d2::Pool::builder()
+/// let pool_builder = r2d2::Pool::<ConnectionManager<PgConnection>>::builder()
 ///     .connection_customizer(Box::new(TestTransaction))
-///     .build(manager)
-///     .expect("Failed to init pool");
+///     .max_size(1);
+///
+/// // let pool = pool_builder.build(manager);
 /// ```
 #[derive(Debug)]
 pub struct TestTransaction;

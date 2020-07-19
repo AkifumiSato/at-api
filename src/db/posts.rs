@@ -9,13 +9,15 @@ use crate::schema::posts::dsl;
 pub struct NewPost<'a> {
     title: &'a str,
     body: &'a str,
+    published: bool,
 }
 
 impl<'a> NewPost<'a> {
-    pub fn new(title: &'a str, body: &'a str) -> NewPost<'a> {
+    pub fn new(title: &'a str, body: &'a str, published: bool) -> NewPost<'a> {
         NewPost {
             title,
             body,
+            published,
         }
     }
 }
@@ -80,15 +82,12 @@ mod test {
         let connection = init();
         let post_table = PostTable::new(&connection);
 
-        let new_post1 = NewPost::new("unit test title111", "unit test body111");
+        let new_post1 = NewPost::new("unit test title111", "unit test body111", true);
+        let _created_posts1 = post_table.create(new_post1).unwrap();
 
-        let created_posts = post_table.create(new_post1).unwrap();
-        let _published_post = post_table.publish(created_posts.id);
-
-        let new_post2 = NewPost::new("unit test title222", "unit test body222");
-
-        let created_posts = post_table.create(new_post2).unwrap();
-        let _published_post = post_table.publish(created_posts.id);
+        let new_post2 = NewPost::new("unit test title222", "unit test body222", false);
+        let created_posts2 = post_table.create(new_post2).unwrap();
+        let _published_post = post_table.publish(created_posts2.id);
 
         let posts = post_table.show(2, 1).unwrap();
 
