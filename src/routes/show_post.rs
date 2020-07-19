@@ -1,6 +1,6 @@
 use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
-use crate::db::{show_post, Post, DbPool};
+use crate::db::posts::{show_post, Post, DbPool};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PostJson {

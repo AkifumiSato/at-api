@@ -19,7 +19,7 @@ mod tests {
     use actix_web::{test, web, App};
     use diesel::r2d2::{self, ConnectionManager};
     use diesel::pg::PgConnection;
-    use crate::db::{self, env_database_url, TestTransaction, DbPool};
+    use crate::db::posts::{self, env_database_url, TestTransaction, DbPool};
 
     fn setup_connection_pool() -> DbPool  {
         let manager = ConnectionManager::<PgConnection>::new(env_database_url());
@@ -49,7 +49,7 @@ mod tests {
             .uri("/posts/create/")
             .set_json(&create_post::PostJson::new("unit test title", "unit test body"))
             .to_request();
-        let resp: db::Post = test::read_response_json(&mut app, req).await;
+        let resp: posts::Post = test::read_response_json(&mut app, req).await;
         let id = resp.id;
         assert_eq!("unit test title", resp.title);
         assert_eq!("unit test body", resp.body);

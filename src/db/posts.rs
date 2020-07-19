@@ -4,8 +4,8 @@ use diesel::pg::PgConnection;
 use dotenv::dotenv;
 use serde::{Deserialize, Serialize};
 use std::env;
-use super::schema::posts;
-use super::schema::posts::dsl;
+use crate::schema::posts;
+use crate::schema::posts::dsl;
 
 pub type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
@@ -23,7 +23,7 @@ pub fn env_database_url() -> String {
 /// use actix_web::{Error, http, web};
 /// use diesel::r2d2::{self, ConnectionManager};
 /// use diesel::pg::PgConnection;
-/// use my_app::db::{env_database_url, TestTransaction, DbPool};
+/// use my_app::db::posts::{env_database_url, TestTransaction, DbPool};
 ///
 /// let manager = ConnectionManager::<PgConnection>::new(env_database_url());
 /// let pool: DbPool = r2d2::Pool::builder()
