@@ -86,6 +86,12 @@ impl<'a> PostTable<'a> {
             .order(dsl::id.desc())
             .load::<Post>(self.connection)
     }
+
+    pub fn delete(&self, target_id: i32) -> Result<(), diesel::result::Error> {
+        diesel::delete(dsl::posts.find(target_id))
+            .execute(self.connection)?;
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -130,5 +136,9 @@ mod test {
 
         assert_eq!(posts.first().unwrap().title, "update test title333");
         assert_eq!(posts.first().unwrap().body, "update test body333");
+
+        let _result = post_table.delete(created_posts2.id);
+        let posts = post_table.show(1, 1).unwrap();
+        assert_ne!(posts.first().unwrap().title, "update test title333");
     }
 }

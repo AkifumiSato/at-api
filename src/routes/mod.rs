@@ -2,6 +2,7 @@ mod show_post;
 mod create_post;
 mod publish_post;
 mod update_post;
+mod delete_post;
 
 use actix_web::web;
 
@@ -12,6 +13,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route("/create/", web::post().to(create_post::index))
             .route("/publish/", web::post().to(publish_post::index))
             .route("/update/", web::post().to(update_post::index))
+            .route("/delete/", web::post().to(delete_post::index))
     );
 }
 
@@ -37,6 +39,8 @@ mod tests {
     /// 1. create
     /// 2. publish
     /// 3. show
+    /// 4. update
+    /// 5. delete
     #[actix_rt::test]
     async fn test_scenario() {
         let pool = setup_connection_pool();
@@ -79,5 +83,12 @@ mod tests {
         let resp: posts::Post = test::read_response_json(&mut app, req).await;
         assert_eq!("update test title", resp.title);
         assert_eq!("update test body", resp.body);
+
+        let req = test::TestRequest::post()
+            .uri("/posts/delete/")
+            .set_json(&publish_post::PostJson::new(id))
+            .to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert!(resp.status().is_success());
     }
 }
