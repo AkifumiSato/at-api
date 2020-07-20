@@ -45,7 +45,7 @@ pub async fn index(
     let post_table = PostTable::new(&connection);
 
     match post_table.update(item.id, item.to_update_post()) {
-        Ok(_post) => HttpResponse::NoContent().finish(),
+        Ok(_) => HttpResponse::NoContent().finish(),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
 }

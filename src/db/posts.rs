@@ -65,16 +65,11 @@ impl<'a> PostTable<'a> {
             .get_result::<Post>(self.connection)
     }
 
-    pub fn update(&self, target_id: i32, update_post: UpdatePost) -> Result<Post, diesel::result::Error> {
-        diesel::update(dsl::posts.find(target_id))
+    pub fn update(&self, target_id: i32, update_post: UpdatePost) -> Result<(), diesel::result::Error> {
+        let _result = diesel::update(dsl::posts.find(target_id))
             .set(&update_post)
-            .get_result::<Post>(self.connection)
-    }
-
-    pub fn publish(&self, target_id: i32) -> Result<Post, diesel::result::Error> {
-        diesel::update(dsl::posts.find(target_id))
-            .set(dsl::published.eq(true))
-            .get_result::<Post>(self.connection)
+            .get_result::<Post>(self.connection)?;
+        Ok(())
     }
 
     pub fn show(&self, count: i64, page: i64) -> Result<Vec<Post>, diesel::result::Error> {
@@ -123,7 +118,7 @@ mod test {
 
         let new_post2 = NewPost::new("unit test title222", "unit test body222", false);
         let created_posts2 = post_table.create(new_post2).unwrap();
-        let _published_post = post_table.publish(created_posts2.id);
+        let _published_post = post_table.update(created_posts2.id, UpdatePost::new(None, None, Some(true)));
 
         let posts = post_table.show(2, 1).unwrap();
 
