@@ -4,15 +4,15 @@ use crate::db::posts::{PostTable, Post};
 use crate::db::pool::DbPool;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct PostJson {
+pub struct Info {
     id: i32,
 }
 
-impl PostJson {
+impl Info {
     /// mod.tsでシナリオテストするために利用.
     #[allow(dead_code)]
-    pub fn new(id: i32) -> PostJson {
-        PostJson {
+    pub fn new(id: i32) -> Info {
+        Info {
             id,
         }
     }
@@ -25,12 +25,12 @@ pub struct Response {
 
 pub async fn index(
     pool: web::Data<DbPool>,
-    item: web::Json<PostJson>,
+    info: web::Path<Info>,
 ) -> HttpResponse {
     let connection = pool.get().expect("couldn't get db connection from pool");
     let post_table = PostTable::new(&connection);
 
-    match post_table.find(item.id) {
+    match post_table.find(info.id) {
         Ok(post) => HttpResponse::Ok().json(Response {
             result: post
         }),

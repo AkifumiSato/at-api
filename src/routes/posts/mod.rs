@@ -10,12 +10,12 @@ use actix_web::web;
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/posts")
-            .route("/show/", web::post().to(show::index))
-            .route("/find/", web::post().to(find::index))
-            .route("/create/", web::post().to(create::index))
-            .route("/publish/", web::post().to(publish::index))
-            .route("/update/", web::post().to(update::index))
-            .route("/delete/", web::post().to(delete::index))
+            .route("/", web::get().to(show::index))
+            .route("/", web::post().to(create::index))
+            .route("/", web::patch().to(update::index))
+            .route("/", web::delete().to(delete::index))
+            .route("/{id}/", web::get().to(find::index))
+            .route("/publish/", web::patch().to(publish::index))
     );
 }
 
@@ -55,40 +55,39 @@ mod tests {
         ).await;
 
         let req = test::TestRequest::post()
-            .uri("/posts/create/")
-            .set_json(&create::PostJson::new("unit test title", "unit test body", None))
+            .uri("/posts/")
+            .set_json(&create::JsonBody::new("unit test title", "unit test body", None))
             .to_request();
         let resp: posts::Post = test::read_response_json(&mut app, req).await;
         let id = resp.id;
         assert_eq!("unit test title", resp.title);
         assert_eq!("unit test body", resp.body);
 
-        let req = test::TestRequest::post()
+        let req = test::TestRequest::patch()
             .uri("/posts/publish/")
-            .set_json(&publish::PostJson::new(id))
+            .set_json(&publish::JsonBody::new(id))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
 
-        let req = test::TestRequest::post()
-            .uri("/posts/show/")
-            .set_json(&show::PostJson::new(None, 1))
+        let req = test::TestRequest::get()
+            .uri("/posts/?count=1")
             .to_request();
         let resp: show::Response = test::read_response_json(&mut app, req).await;
         assert_eq!(1, resp.result.iter().len());
         assert_eq!(id, resp.result.first().unwrap().id);
 
-        let req = test::TestRequest::post()
-            .uri("/posts/update/")
-            .set_json(&update::PostJson::new(id, Some("update test title"), Some("update test body"), Some(true)))
+        let req = test::TestRequest::patch()
+            .uri("/posts/")
+            .set_json(&update::JsonBody::new(id, Some("update test title"), Some("update test body"), Some(true)))
             .to_request();
         let resp: posts::Post = test::read_response_json(&mut app, req).await;
         assert_eq!("update test title", resp.title);
         assert_eq!("update test body", resp.body);
 
-        let req = test::TestRequest::post()
-            .uri("/posts/delete/")
-            .set_json(&publish::PostJson::new(id))
+        let req = test::TestRequest::delete()
+            .uri("/posts/")
+            .set_json(&delete::JsonBody::new(id))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
@@ -110,17 +109,16 @@ mod tests {
         ).await;
 
         let req = test::TestRequest::post()
-            .uri("/posts/create/")
-            .set_json(&create::PostJson::new("unit test title", "unit test body", Some(true)))
+            .uri("/posts/")
+            .set_json(&create::JsonBody::new("unit test title", "unit test body", Some(true)))
             .to_request();
         let resp: posts::Post = test::read_response_json(&mut app, req).await;
         let id = resp.id;
         assert_eq!("unit test title", resp.title);
         assert_eq!("unit test body", resp.body);
 
-        let req = test::TestRequest::post()
-            .uri("/posts/find/")
-            .set_json(&find::PostJson::new(id))
+        let req = test::TestRequest::get()
+            .uri(&format!("/posts/{}/", id))
             .to_request();
         let resp: find::Response = test::read_response_json(&mut app, req).await;
         let post = resp.result.unwrap();
