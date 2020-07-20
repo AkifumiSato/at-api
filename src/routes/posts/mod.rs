@@ -1,6 +1,6 @@
-mod show;
-mod create;
-mod update;
+mod get;
+mod post;
+mod patch;
 mod delete;
 mod find;
 
@@ -9,9 +9,9 @@ use actix_web::web;
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/posts")
-            .route("/", web::get().to(show::index))
-            .route("/", web::post().to(create::index))
-            .route("/", web::patch().to(update::index))
+            .route("/", web::get().to(get::index))
+            .route("/", web::post().to(post::index))
+            .route("/", web::patch().to(patch::index))
             .route("/", web::delete().to(delete::index))
             .route("/{id}/", web::get().to(find::index))
     );
@@ -51,7 +51,7 @@ mod tests {
 
         let req = test::TestRequest::post()
             .uri("/posts/")
-            .set_json(&create::JsonBody::new("unit test title", "unit test body", Some(true)))
+            .set_json(&post::JsonBody::new("unit test title", "unit test body", Some(true)))
             .to_request();
         let resp: posts::Post = test::read_response_json(&mut app, req).await;
         let id = resp.id;
@@ -61,7 +61,7 @@ mod tests {
         let req = test::TestRequest::get()
             .uri("/posts/?count=1")
             .to_request();
-        let resp: show::Response = test::read_response_json(&mut app, req).await;
+        let resp: get::Response = test::read_response_json(&mut app, req).await;
         assert_eq!(1, resp.result.iter().len());
         assert_eq!(id, resp.result.first().unwrap().id);
     }
@@ -85,7 +85,7 @@ mod tests {
 
         let req = test::TestRequest::post()
             .uri("/posts/")
-            .set_json(&create::JsonBody::new("unit test title", "unit test body", None))
+            .set_json(&post::JsonBody::new("unit test title", "unit test body", None))
             .to_request();
         let resp: posts::Post = test::read_response_json(&mut app, req).await;
         let id = resp.id;
@@ -95,12 +95,12 @@ mod tests {
         let req = test::TestRequest::get()
             .uri("/posts/?count=1")
             .to_request();
-        let resp: show::Response = test::read_response_json(&mut app, req).await;
+        let resp: get::Response = test::read_response_json(&mut app, req).await;
         assert_ne!(id, resp.result.first().unwrap().id);
 
         let req = test::TestRequest::patch()
             .uri("/posts/")
-            .set_json(&update::JsonBody::new(id, None, None, Some(true)))
+            .set_json(&patch::JsonBody::new(id, None, None, Some(true)))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
@@ -108,7 +108,7 @@ mod tests {
         let req = test::TestRequest::get()
             .uri("/posts/?count=1")
             .to_request();
-        let resp: show::Response = test::read_response_json(&mut app, req).await;
+        let resp: get::Response = test::read_response_json(&mut app, req).await;
         assert_eq!(1, resp.result.iter().len());
         assert_eq!(id, resp.result.first().unwrap().id);
     }
@@ -132,7 +132,7 @@ mod tests {
 
         let req = test::TestRequest::post()
             .uri("/posts/")
-            .set_json(&create::JsonBody::new("unit test title", "unit test body", Some(true)))
+            .set_json(&post::JsonBody::new("unit test title", "unit test body", Some(true)))
             .to_request();
         let resp: posts::Post = test::read_response_json(&mut app, req).await;
         let id = resp.id;

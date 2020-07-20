@@ -36,7 +36,7 @@ pub async fn index(
     let new_post = NewPost::new(&item.title, &item.body, published);
 
     match post_table.create(new_post) {
-        Ok(post) => HttpResponse::Ok().json(post),
+        Ok(post) => HttpResponse::Created().json(post),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
 }
