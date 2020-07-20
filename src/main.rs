@@ -28,7 +28,7 @@ async fn main() -> std::io::Result<()> {
             .data(pool.clone())
             .wrap(Logger::default())
             .data(web::JsonConfig::default().limit(4096))
-            .service(web::scope("/").configure(routes::config))
+            .service(web::scope("/").configure(routes::posts::config))
     })
         .bind(&bind)?
         .run()
