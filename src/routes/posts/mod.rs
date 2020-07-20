@@ -1,6 +1,5 @@
 mod show;
 mod create;
-mod publish;
 mod update;
 mod delete;
 mod find;
@@ -15,7 +14,6 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route("/", web::patch().to(update::index))
             .route("/", web::delete().to(delete::index))
             .route("/{id}/", web::get().to(find::index))
-            .route("/publish/", web::patch().to(publish::index))
     );
 }
 
@@ -39,10 +37,9 @@ mod tests {
     /// # scenario
     ///
     /// 1. create
-    /// 2. publish
-    /// 3. show
-    /// 4. update
-    /// 5. delete
+    /// 2. show
+    /// 3. update
+    /// 4. delete
     #[actix_rt::test]
     async fn test_scenario() {
         let pool = setup_connection_pool();
@@ -64,8 +61,8 @@ mod tests {
         assert_eq!("unit test body", resp.body);
 
         let req = test::TestRequest::patch()
-            .uri("/posts/publish/")
-            .set_json(&publish::JsonBody::new(id))
+            .uri("/posts/")
+            .set_json(&update::JsonBody::new(id, None, None, Some(true)))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
