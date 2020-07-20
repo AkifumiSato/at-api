@@ -87,6 +87,12 @@ impl<'a> PostTable<'a> {
             .load::<Post>(self.connection)
     }
 
+    pub fn find(&self, id: i32) -> Result<Option<Post>, diesel::result::Error> {
+        dsl::posts.find(id)
+            .first::<Post>(self.connection)
+            .optional()
+    }
+
     pub fn delete(&self, target_id: i32) -> Result<(), diesel::result::Error> {
         diesel::delete(dsl::posts.find(target_id))
             .execute(self.connection)?;
@@ -113,7 +119,7 @@ mod test {
         let post_table = PostTable::new(&connection);
 
         let new_post1 = NewPost::new("unit test title111", "unit test body111", true);
-        let _created_posts1 = post_table.create(new_post1).unwrap();
+        let created_posts1 = post_table.create(new_post1).unwrap();
 
         let new_post2 = NewPost::new("unit test title222", "unit test body222", false);
         let created_posts2 = post_table.create(new_post2).unwrap();
@@ -140,5 +146,11 @@ mod test {
         let _result = post_table.delete(created_posts2.id);
         let posts = post_table.show(1, 1).unwrap();
         assert_ne!(posts.first().unwrap().title, "update test title333");
+
+        let result = post_table.find(created_posts1.id).unwrap().unwrap();
+        assert_eq!(result.title, "unit test title111");
+
+        let result = post_table.find(created_posts2.id).unwrap();
+        assert!(result.is_none());
     }
 }

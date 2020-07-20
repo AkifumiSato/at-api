@@ -3,6 +3,7 @@ mod create_post;
 mod publish_post;
 mod update_post;
 mod delete_post;
+mod find_post;
 
 use actix_web::web;
 
@@ -10,6 +11,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/posts")
             .route("/show/", web::post().to(show_post::index))
+            .route("/find/", web::post().to(find_post::index))
             .route("/create/", web::post().to(create_post::index))
             .route("/publish/", web::post().to(publish_post::index))
             .route("/update/", web::post().to(update_post::index))
@@ -90,5 +92,39 @@ mod tests {
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
+    }
+
+    /// # scenario2
+    ///
+    /// 1. create
+    /// 2. find
+    #[actix_rt::test]
+    async fn test_scenario2() {
+        let pool = setup_connection_pool();
+
+        let mut app = test::init_service(
+            App::new()
+                .data(pool.clone())
+                .data(web::JsonConfig::default().limit(4096))
+                .service(web::scope("/").configure(config))
+        ).await;
+
+        let req = test::TestRequest::post()
+            .uri("/posts/create/")
+            .set_json(&create_post::PostJson::new("unit test title", "unit test body", Some(true)))
+            .to_request();
+        let resp: posts::Post = test::read_response_json(&mut app, req).await;
+        let id = resp.id;
+        assert_eq!("unit test title", resp.title);
+        assert_eq!("unit test body", resp.body);
+
+        let req = test::TestRequest::post()
+            .uri("/posts/find/")
+            .set_json(&find_post::PostJson::new(id))
+            .to_request();
+        let resp: find_post::Response = test::read_response_json(&mut app, req).await;
+        let post = resp.result.unwrap();
+        assert_eq!("unit test title", post.title);
+        assert_eq!("unit test body", post.body);
     }
 }
