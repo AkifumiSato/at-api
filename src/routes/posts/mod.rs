@@ -64,6 +64,12 @@ mod tests {
         let resp: get::Response = test::read_response_json(&mut app, req).await;
         assert_eq!(1, resp.result.iter().len());
         assert_eq!(id, resp.result.first().unwrap().id);
+
+        let req = test::TestRequest::get()
+            .uri("/posts/")
+            .to_request();
+        let resp: get::Response = test::read_response_json(&mut app, req).await;
+        assert_eq!(id, resp.result.first().unwrap().id);
     }
 
     /// # scenario

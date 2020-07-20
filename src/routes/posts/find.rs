@@ -8,16 +8,6 @@ pub struct Info {
     id: i32,
 }
 
-impl Info {
-    /// mod.tsでシナリオテストするために利用.
-    #[allow(dead_code)]
-    pub fn new(id: i32) -> Info {
-        Info {
-            id,
-        }
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Response {
     pub result: Option<Post>,

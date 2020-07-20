@@ -6,18 +6,7 @@ use crate::db::pool::DbPool;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetParams {
     page: Option<i64>,
-    count: i64,
-}
-
-impl GetParams {
-    /// mod.tsでシナリオテストするために利用.
-    #[allow(dead_code)]
-    pub fn new(page: Option<i64>, count: i64) -> GetParams {
-        GetParams {
-            page,
-            count,
-        }
-    }
+    count: Option<i64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -32,12 +21,10 @@ pub async fn index(
     let connection = pool.get().expect("couldn't get db connection from pool");
     let post_table = PostTable::new(&connection);
 
-    let page = match item.page {
-        Some(x) => x,
-        None => 1,
-    };
+    let page = item.page.unwrap_or_else(|| 1);
+    let count = item.count.unwrap_or_else(|| 10);
 
-    match post_table.show(item.count, page) {
+    match post_table.show(count, page) {
         Ok(posts) => HttpResponse::Ok().json(Response {
             result: posts
         }),

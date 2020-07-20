@@ -15,19 +15,10 @@ impl JsonBody {
     /// mod.tsでシナリオテストするために利用.
     #[allow(dead_code)]
     pub fn new<'a>(id: i32, title: Option<&'a str>, body: Option<&'a str>, published: Option<bool>) -> JsonBody {
-        let title = match title {
-            Some(x) => Some(x.to_string()),
-            None => None,
-        };
-        let body = match body {
-            Some(x) => Some(x.to_string()),
-            None => None,
-        };
-
         JsonBody {
             id,
-            title,
-            body,
+            title: title.map(|v|  v.to_string()),
+            body: body.map(|v|  v.to_string()),
             published,
         }
     }
