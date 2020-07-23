@@ -1,5 +1,6 @@
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
+use chrono::{NaiveDateTime};
 use serde::{Deserialize, Serialize};
 use crate::schema::posts;
 use crate::schema::posts::dsl;
@@ -46,6 +47,8 @@ pub struct Post {
     pub title: String,
     pub body: String,
     pub published: bool,
+    pub created_at: NaiveDateTime,
+    pub published_at: NaiveDateTime,
 }
 
 pub struct PostTable<'a> {
