@@ -1,7 +1,8 @@
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
-use crate::db::posts::{NewPost, PostTable};
+use crate::db::posts::{PostTable};
 use crate::db::pool::DbPool;
+use crate::model::posts::NewPost;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JsonBody {

@@ -1,7 +1,8 @@
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 use crate::db::pool::DbPool;
-use crate::db::tags::{TagsTable, Tag};
+use crate::db::tags::{TagsTable};
+use crate::model::tags::Tag;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Info {

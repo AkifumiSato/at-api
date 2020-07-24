@@ -24,9 +24,9 @@ mod tests {
     use diesel::r2d2::{self, ConnectionManager};
     use diesel::pg::PgConnection;
     use crate::db::pool::{env_database_url, TestTransaction, DbPool};
-    use crate::db::posts;
+    use crate::model::posts::Post;
 
-    fn setup_connection_pool() -> DbPool  {
+    fn setup_connection_pool() -> DbPool {
         let manager = ConnectionManager::<PgConnection>::new(env_database_url());
         r2d2::Pool::builder()
             .connection_customizer(Box::new(TestTransaction))
@@ -53,7 +53,7 @@ mod tests {
             .uri("/")
             .set_json(&post::JsonBody::new("unit test title", "unit test body", Some(true)))
             .to_request();
-        let resp: posts::Post = test::read_response_json(&mut app, req).await;
+        let resp: Post = test::read_response_json(&mut app, req).await;
         let id = resp.id;
         assert_eq!("unit test title", resp.title);
         assert_eq!("unit test body", resp.body);
@@ -93,7 +93,7 @@ mod tests {
             .uri("/")
             .set_json(&post::JsonBody::new("unit test title", "unit test body", None))
             .to_request();
-        let resp: posts::Post = test::read_response_json(&mut app, req).await;
+        let resp: Post = test::read_response_json(&mut app, req).await;
         let id = resp.id;
         assert_eq!("unit test title", resp.title);
         assert_eq!("unit test body", resp.body);
@@ -140,7 +140,7 @@ mod tests {
             .uri("/")
             .set_json(&post::JsonBody::new("unit test title", "unit test body", Some(true)))
             .to_request();
-        let resp: posts::Post = test::read_response_json(&mut app, req).await;
+        let resp: Post = test::read_response_json(&mut app, req).await;
         let id = resp.id;
         assert_eq!("unit test title", resp.title);
         assert_eq!("unit test body", resp.body);

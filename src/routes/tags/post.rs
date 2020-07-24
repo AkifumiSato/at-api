@@ -1,7 +1,8 @@
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 use crate::db::pool::DbPool;
-use crate::db::tags::{TagsTable, NewTag};
+use crate::db::tags::{TagsTable};
+use crate::model::tags::NewTag;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateJsonBody {

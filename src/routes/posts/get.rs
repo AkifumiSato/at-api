@@ -1,7 +1,8 @@
 use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
-use crate::db::posts::{Post, PostTable};
+use crate::db::posts::{PostTable};
 use crate::db::pool::DbPool;
+use crate::model::posts::Post;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetParams {
