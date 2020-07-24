@@ -11,6 +11,7 @@ services:
       - db
     environment:
       - RUST_LOG=actix_web=debug
+      - TZ=Asia/Tokyo
     volumes:
       - .:/app
       - cargo-cache:/usr/local/cargo/registry
@@ -27,6 +28,7 @@ services:
     environment:
       POSTGRES_PASSWORD: dockerpassword
       POSTGRES_USER: docker
+      TZ: Asia/Tokyo
     restart: always
 
 volumes:
