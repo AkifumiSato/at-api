@@ -111,27 +111,24 @@ impl<'a> TagsTable<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::db::pool::env_database_url;
-
-    fn init() -> PgConnection {
-        let database_url = env_database_url();
-        let db = PgConnection::establish(&database_url)
-            .expect(&format!("Error connecting to {}", database_url));
-        db.begin_test_transaction().unwrap();
-        db
-    }
+    use crate::db::pool::{test_util};
+    use crate::db::posts::{NewPost, PostTable};
 
     #[test]
     fn tags_scenario() {
-        let connection = init();
+        let connection = test_util::connection_init();
         let tags_table = TagsTable::new(&connection);
+        let post_table = PostTable::new(&connection);
+
+        let new_post = NewPost::new("tag test title", "tag test body", true);
+        let created_posts = post_table.create(new_post).unwrap();
 
         let new_tag = NewTag::new("test name", "test slug");
         let created_tag = tags_table.create(new_tag).unwrap();
-        let _register_result = tags_table.register_tag_post(412, created_tag.id);
+        let _register_result = tags_table.register_tag_post(created_posts.id, created_tag.id);
 
         let tag = tags_table
-            .find_by_post(412)
+            .find_by_post(created_posts.id)
             .unwrap();
         let tag = tag
             .unwrap();
@@ -143,7 +140,7 @@ mod test {
         let _result = tags_table.update(created_tag.id, update_tag);
 
         let tag = tags_table
-            .find_by_post(412)
+            .find_by_post(created_posts.id)
             .unwrap();
         let tag = tag
             .unwrap();
@@ -153,7 +150,9 @@ mod test {
 
         let all_tags = tags_table.all_tags().unwrap();
         let tag = all_tags
-            .first()
+            .iter()
+            .filter(|x| x.id == created_tag.id)
+            .next()
             .unwrap();
 
         assert_eq!(tag.slug, "update test slug111");
@@ -161,7 +160,7 @@ mod test {
         let _result = tags_table.delete(created_tag.id);
 
         let all_tags = tags_table
-            .find_by_post(412);
+            .find_by_post(created_posts.id);
 
         assert!(all_tags.is_err());
     }

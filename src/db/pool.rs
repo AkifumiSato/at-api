@@ -41,3 +41,19 @@ impl CustomizeConnection<PgConnection, r2d2::Error> for TestTransaction {
         Ok(())
     }
 }
+
+
+#[cfg(test)]
+pub mod test_util {
+    use super::*;
+    use crate::db::pool::env_database_url;
+    use diesel::connection::TransactionManager;
+
+    pub fn connection_init() -> PgConnection {
+        let database_url = env_database_url();
+        let db = PgConnection::establish(&database_url)
+            .expect(&format!("Error connecting to {}", database_url));
+        db.begin_test_transaction().unwrap();
+        db
+    }
+}
