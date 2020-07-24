@@ -6,8 +6,8 @@ use crate::model::posts::Post;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetParams {
-    page: Option<i64>,
-    count: Option<i64>,
+    page: Option<i32>,
+    count: Option<i32>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

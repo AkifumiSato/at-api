@@ -40,14 +40,14 @@ pub async fn create(
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RegisterJsonBody {
-    post_id: i64,
-    tag_id: i64,
+    post_id: i32,
+    tag_id: i32,
 }
 
 impl RegisterJsonBody {
     /// mod.tsでシナリオテストするために利用.
     #[allow(dead_code)]
-    pub fn new(post_id: i64, tag_id: i64) -> RegisterJsonBody {
+    pub fn new(post_id: i32, tag_id: i32) -> RegisterJsonBody {
         RegisterJsonBody {
             post_id,
             tag_id,
@@ -62,7 +62,7 @@ pub async fn register(
     let connection = pool.get().expect("couldn't get db connection from pool");
     let tag_table = TagsTable::new(&connection);
 
-    match tag_table.register_tag_post(item.post_id as i32, item.tag_id as i32) {
+    match tag_table.register_tag_post(item.post_id, item.tag_id) {
         Ok(_) => HttpResponse::NoContent().finish(),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

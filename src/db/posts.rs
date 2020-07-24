@@ -28,12 +28,12 @@ impl<'a> PostTable<'a> {
         Ok(())
     }
 
-    pub fn show(&self, count: i64, page: i64) -> Result<Vec<Post>, diesel::result::Error> {
+    pub fn show(&self, count: i32, page: i32) -> Result<Vec<Post>, diesel::result::Error> {
         let offset = count * (page - 1);
 
         dsl::posts.filter(dsl::published.eq(true))
-            .limit(count)
-            .offset(offset)
+            .limit(count as i64)
+            .offset(offset as i64)
             .order(dsl::id.desc())
             .load::<Post>(self.connection)
     }
