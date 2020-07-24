@@ -47,7 +47,6 @@ impl CustomizeConnection<PgConnection, r2d2::Error> for TestTransaction {
 pub mod test_util {
     use super::*;
     use crate::db::pool::env_database_url;
-    use diesel::connection::TransactionManager;
 
     pub fn connection_init() -> PgConnection {
         let database_url = env_database_url();
