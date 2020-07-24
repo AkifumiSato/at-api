@@ -2,7 +2,6 @@ mod get;
 mod post;
 mod patch;
 mod delete;
-mod find;
 
 use actix_web::web;
 
@@ -14,6 +13,5 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route("register/", web::post().to(post::register))
             .route("", web::patch().to(patch::index))
             .route("", web::delete().to(delete::index))
-            .route("{id}/", web::get().to(find::index))
     );
 }

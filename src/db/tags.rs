@@ -31,16 +31,15 @@ impl<'a> TagsTable<'a> {
         Ok(())
     }
 
-    pub fn find_by_post(&self, post_id: i32) -> Result<Option<Tag>, diesel::result::Error> {
+    pub fn find_by_post(&self, post_ids: Vec<i32>) -> Result<Vec<Tag>, diesel::result::Error> {
         let tag_ids: Vec<i32> = posts_tags::dsl::posts_tags
-            .filter(posts_tags::dsl::post_id.eq(post_id))
+            .filter(posts_tags::dsl::post_id.eq_any(post_ids))
             .select(posts_tags::tag_id)
             .load::<i32>(self.connection)?;
 
         tags::dsl::tags
             .filter(tags::id.eq_any(tag_ids))
-            .first::<Tag>(self.connection)
-            .optional()
+            .load::<Tag>(self.connection)
     }
 
     pub fn all_tags(&self) -> Result<Vec<Tag>, diesel::result::Error> {
@@ -84,9 +83,11 @@ mod test {
         let _register_result = tags_table.register_tag_post(created_posts.id, created_tag.id);
 
         let tag = tags_table
-            .find_by_post(created_posts.id)
+            .find_by_post(vec![created_posts.id])
             .unwrap();
         let tag = tag
+            .iter()
+            .next()
             .unwrap();
 
         assert_eq!(tag.name, "test name");
@@ -96,9 +97,11 @@ mod test {
         let _result = tags_table.update(created_tag.id, update_tag);
 
         let tag = tags_table
-            .find_by_post(created_posts.id)
+            .find_by_post(vec![created_posts.id])
             .unwrap();
         let tag = tag
+            .iter()
+            .next()
             .unwrap();
 
         assert_eq!(tag.name, "update test name111");
@@ -116,7 +119,7 @@ mod test {
         let _result = tags_table.delete(created_tag.id);
 
         let all_tags = tags_table
-            .find_by_post(created_posts.id);
+            .find_by_post(vec![created_posts.id]);
 
         assert!(all_tags.is_err());
     }
