@@ -2,22 +2,6 @@ use serde::{Deserialize, Serialize};
 use crate::schema::tags;
 use crate::schema::posts_tags;
 
-#[derive(Insertable)]
-#[table_name = "tags"]
-pub struct NewTag<'a> {
-    name: &'a str,
-    slug: &'a str,
-}
-
-impl<'a> NewTag<'a> {
-    pub fn new(name: &'a str, slug: &'a str) -> NewTag<'a> {
-        NewTag {
-            name,
-            slug,
-        }
-    }
-}
-
 #[derive(AsChangeset)]
 #[table_name = "tags"]
 pub struct UpdateTag {

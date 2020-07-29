@@ -1,32 +1,17 @@
 use actix_web::{web, HttpResponse};
-use serde::{Deserialize, Serialize};
 use crate::driver::pool::DbPool;
-use crate::driver::tags::TagsTable;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct JsonBody {
-    id: i32,
-}
-
-impl JsonBody {
-    /// mod.tsでシナリオテストするために利用.
-    #[allow(dead_code)]
-    pub fn new(id: i32) -> JsonBody {
-        JsonBody {
-            id,
-        }
-    }
-}
+use crate::usecase::tag_delete::{self, InputData};
 
 pub async fn index(
     pool: web::Data<DbPool>,
-    item: web::Json<JsonBody>,
+    item: web::Json<InputData>,
 ) -> HttpResponse {
     let connection = pool.get().expect("couldn't get driver connection from pool");
-    let tag_table = TagsTable::new(&connection);
+    let input = item.into_inner();
+    let id = input.id;
 
-    match tag_table.delete(item.id) {
-        Ok(_v) => HttpResponse::Ok().body(format!("delete tag. Id is [{}]", item.id)),
+    match tag_delete::execute(&connection, input) {
+        Ok(_v) => HttpResponse::Ok().body(format!("delete tag. Id is [{}]", id)),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
 }

@@ -2,7 +2,23 @@ use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use crate::schema::tags;
 use crate::schema::posts_tags;
-use crate::domain::entity::tags::{NewTag, Tag, PostsTag, UpdateTag};
+use crate::domain::entity::tags::{Tag, PostsTag, UpdateTag};
+
+#[derive(Insertable)]
+#[table_name = "tags"]
+pub struct NewTag {
+    name: String,
+    slug: String,
+}
+
+impl NewTag {
+    pub fn new(name: String, slug: String) -> NewTag {
+        NewTag {
+            name,
+            slug,
+        }
+    }
+}
 
 pub struct TagsTable<'a> {
     connection: &'a PgConnection,
@@ -78,7 +94,7 @@ mod test {
         let new_post = NewPost::new("tag test title", "tag test body", true);
         let created_posts = post_table.create(new_post).unwrap();
 
-        let new_tag = NewTag::new("test name", "test slug");
+        let new_tag = NewTag::new("test name".to_string(), "test slug".to_string());
         let created_tag = tags_table.create(new_tag).unwrap();
         let _register_result = tags_table.register_tag_post(created_posts.id, created_tag.id);
 
