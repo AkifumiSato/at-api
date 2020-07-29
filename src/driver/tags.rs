@@ -65,9 +65,9 @@ impl<'a> TagsTable<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::db::pool::{test_util};
+    use crate::driver::pool::{test_util};
     use crate::domain::entity::posts::{NewPost};
-    use crate::db::posts::PostTable;
+    use crate::driver::posts::PostTable;
 
     #[test]
     fn tags_scenario() {

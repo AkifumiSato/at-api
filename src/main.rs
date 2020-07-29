@@ -6,7 +6,7 @@ use actix_web::{
 use diesel::r2d2::{self, ConnectionManager};
 use diesel::pg::PgConnection;
 use my_app::routes;
-use my_app::db::pool::env_database_url;
+use my_app::driver::pool::env_database_url;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {

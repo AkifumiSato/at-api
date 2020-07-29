@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
-use crate::db::posts::{PostTable};
-use crate::db::pool::DbPool;
+use crate::driver::posts::{PostTable};
+use crate::driver::pool::DbPool;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JsonBody {
@@ -22,7 +22,7 @@ pub async fn index(
     pool: web::Data<DbPool>,
     item: web::Json<JsonBody>,
 ) -> HttpResponse {
-    let connection = pool.get().expect("couldn't get db connection from pool");
+    let connection = pool.get().expect("couldn't get driver connection from pool");
     let post_table = PostTable::new(&connection);
 
     match post_table.delete(item.id) {

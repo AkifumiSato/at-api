@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
-use crate::db::pool::DbPool;
-use crate::db::tags::{TagsTable};
+use crate::driver::pool::DbPool;
+use crate::driver::tags::{TagsTable};
 use crate::domain::entity::tags::NewTag;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -29,7 +29,7 @@ pub async fn create(
     pool: web::Data<DbPool>,
     item: web::Json<CreateJsonBody>,
 ) -> HttpResponse {
-    let connection = pool.get().expect("couldn't get db connection from pool");
+    let connection = pool.get().expect("couldn't get driver connection from pool");
     let tag_table = TagsTable::new(&connection);
 
     match tag_table.create(item.to_new_tag()) {
@@ -59,7 +59,7 @@ pub async fn register(
     pool: web::Data<DbPool>,
     item: web::Json<RegisterJsonBody>,
 ) -> HttpResponse {
-    let connection = pool.get().expect("couldn't get db connection from pool");
+    let connection = pool.get().expect("couldn't get driver connection from pool");
     let tag_table = TagsTable::new(&connection);
 
     match tag_table.register_tag_post(item.post_id, item.tag_id) {

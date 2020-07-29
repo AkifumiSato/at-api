@@ -54,7 +54,7 @@ impl<'a> PostTable<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::db::pool::{test_util};
+    use crate::driver::pool::{test_util};
 
     #[test]
     fn scenario() {

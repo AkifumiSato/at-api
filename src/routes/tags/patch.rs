@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
-use crate::db::pool::DbPool;
-use crate::db::tags::{TagsTable};
+use crate::driver::pool::DbPool;
+use crate::driver::tags::{TagsTable};
 use crate::domain::entity::tags::UpdateTag;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -31,7 +31,7 @@ pub async fn index(
     pool: web::Data<DbPool>,
     item: web::Json<JsonBody>,
 ) -> HttpResponse {
-    let connection = pool.get().expect("couldn't get db connection from pool");
+    let connection = pool.get().expect("couldn't get driver connection from pool");
     let tag_table = TagsTable::new(&connection);
 
     match tag_table.update(item.id, item.to_update_tag()) {

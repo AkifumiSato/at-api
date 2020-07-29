@@ -20,7 +20,7 @@ pub fn env_database_url() -> String {
 /// use actix_web::{Error, http, web};
 /// use diesel::r2d2::{self, ConnectionManager};
 /// use diesel::pg::PgConnection;
-/// use my_app::db::pool::{env_database_url, TestTransaction, DbPool};
+/// use my_app::driver::pool::{env_database_url, TestTransaction, DbPool};
 ///
 /// let manager = ConnectionManager::<PgConnection>::new(env_database_url());
 /// let pool_builder = r2d2::Pool::<ConnectionManager<PgConnection>>::builder()
@@ -46,7 +46,7 @@ impl CustomizeConnection<PgConnection, r2d2::Error> for TestTransaction {
 #[cfg(test)]
 pub mod test_util {
     use super::*;
-    use crate::db::pool::env_database_url;
+    use crate::driver::pool::env_database_url;
 
     pub fn connection_init() -> PgConnection {
         let database_url = env_database_url();
