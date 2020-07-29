@@ -25,6 +25,7 @@ mod tests {
     use diesel::pg::PgConnection;
     use crate::driver::pool::{env_database_url, TestTransaction, DbPool};
     use crate::domain::entity::posts::Post;
+    use crate::usecase;
 
     fn setup_connection_pool() -> DbPool {
         let manager = ConnectionManager::<PgConnection>::new(env_database_url());
@@ -61,14 +62,14 @@ mod tests {
         let req = test::TestRequest::get()
             .uri("/?count=1")
             .to_request();
-        let resp: get::Response = test::read_response_json(&mut app, req).await;
+        let resp: usecase::article_list_get::OutputData = test::read_response_json(&mut app, req).await;
         assert_eq!(1, resp.result.iter().len());
         assert_eq!(id, resp.result.first().unwrap().id);
 
         let req = test::TestRequest::get()
             .uri("/")
             .to_request();
-        let resp: get::Response = test::read_response_json(&mut app, req).await;
+        let resp: usecase::article_list_get::OutputData = test::read_response_json(&mut app, req).await;
         assert_eq!(id, resp.result.first().unwrap().id);
     }
 
@@ -101,12 +102,12 @@ mod tests {
         let req = test::TestRequest::get()
             .uri("/?count=1")
             .to_request();
-        let resp: get::Response = test::read_response_json(&mut app, req).await;
+        let resp: usecase::article_list_get::OutputData = test::read_response_json(&mut app, req).await;
         assert_ne!(id, resp.result.first().unwrap().id);
 
         let req = test::TestRequest::patch()
             .uri("/")
-            .set_json(&patch::JsonBody::new(id, None, None, Some(true)))
+            .set_json(&usecase::post_update::InputData::new(id, None, None, Some(true)))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
@@ -114,7 +115,7 @@ mod tests {
         let req = test::TestRequest::get()
             .uri("/?count=1")
             .to_request();
-        let resp: get::Response = test::read_response_json(&mut app, req).await;
+        let resp: usecase::article_list_get::OutputData = test::read_response_json(&mut app, req).await;
         assert_eq!(1, resp.result.iter().len());
         assert_eq!(id, resp.result.first().unwrap().id);
     }
@@ -148,14 +149,14 @@ mod tests {
         let req = test::TestRequest::get()
             .uri(&format!("/{}/", id))
             .to_request();
-        let resp: find::Response = test::read_response_json(&mut app, req).await;
+        let resp: usecase::article_find::OutputData = test::read_response_json(&mut app, req).await;
         let post = resp.result.unwrap();
         assert_eq!("unit test title", post.title);
         assert_eq!("unit test body", post.body);
 
         let req = test::TestRequest::delete()
             .uri("/")
-            .set_json(&delete::JsonBody::new(id))
+            .set_json(&usecase::post_delete::InputData::new(id))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
@@ -163,7 +164,7 @@ mod tests {
         let req = test::TestRequest::get()
             .uri(&format!("/{}/", id))
             .to_request();
-        let resp: find::Response = test::read_response_json(&mut app, req).await;
+        let resp: usecase::article_find::OutputData = test::read_response_json(&mut app, req).await;
         let post = resp.result;
         assert!(post.is_none());
     }

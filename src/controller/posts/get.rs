@@ -1,18 +1,24 @@
 use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
-use crate::driver::posts::{PostTable};
 use crate::driver::pool::DbPool;
-use crate::domain::entity::posts::Post;
+use crate::usecase::article_list_get::{self, InputData};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetParams {
-    page: Option<i32>,
-    count: Option<i32>,
+    pub page: Option<i32>,
+    pub count: Option<i32>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Response {
-    pub result: Vec<Post>,
+impl GetParams {
+    pub fn to_input_data(&self) -> InputData {
+        let page = self.page.unwrap_or_else(|| 1);
+        let count = self.count.unwrap_or_else(|| 10);
+
+        InputData {
+            page,
+            count,
+        }
+    }
 }
 
 pub async fn index(
@@ -20,15 +26,9 @@ pub async fn index(
     item: web::Query<GetParams>,
 ) -> HttpResponse {
     let connection = pool.get().expect("couldn't get driver connection from pool");
-    let post_table = PostTable::new(&connection);
 
-    let page = item.page.unwrap_or_else(|| 1);
-    let count = item.count.unwrap_or_else(|| 10);
-
-    match post_table.show(count, page) {
-        Ok(posts) => HttpResponse::Ok().json(Response {
-            result: posts
-        }),
+    match article_list_get::execute(&connection, item.into_inner().to_input_data()) {
+        Ok(result) => HttpResponse::Ok().json(result),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
 }

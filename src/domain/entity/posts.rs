@@ -21,24 +21,6 @@ impl<'a> NewPost<'a> {
     }
 }
 
-#[derive(AsChangeset)]
-#[table_name = "posts"]
-pub struct UpdatePost {
-    title: Option<String>,
-    body: Option<String>,
-    published: Option<bool>,
-}
-
-impl UpdatePost {
-    pub fn new(title: Option<String>, body: Option<String>, published: Option<bool>) -> UpdatePost {
-        UpdatePost {
-            title,
-            body,
-            published,
-        }
-    }
-}
-
 #[derive(Debug, Queryable, Serialize, Deserialize)]
 pub struct Post {
     pub id: i32,

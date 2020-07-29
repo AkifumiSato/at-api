@@ -1,30 +1,15 @@
 use actix_web::{web, HttpResponse};
-use serde::{Deserialize, Serialize};
-use crate::driver::posts::{PostTable};
 use crate::driver::pool::DbPool;
-use crate::domain::entity::posts::Post;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Info {
-    id: i32,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Response {
-    pub result: Option<Post>,
-}
+use crate::usecase::article_find::{self, InputData};
 
 pub async fn index(
     pool: web::Data<DbPool>,
-    info: web::Path<Info>,
+    info: web::Path<InputData>,
 ) -> HttpResponse {
     let connection = pool.get().expect("couldn't get driver connection from pool");
-    let post_table = PostTable::new(&connection);
 
-    match post_table.find(info.id) {
-        Ok(post) => HttpResponse::Ok().json(Response {
-            result: post
-        }),
+    match article_find::execute(&connection, info.into_inner()) {
+        Ok(result) => HttpResponse::Ok().json(result),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
 }

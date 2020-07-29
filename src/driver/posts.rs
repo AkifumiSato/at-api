@@ -2,7 +2,25 @@ use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use crate::schema::posts;
 use crate::schema::posts::dsl;
-use crate::domain::entity::posts::{NewPost, UpdatePost, Post};
+use crate::domain::entity::posts::{NewPost, Post};
+
+#[derive(AsChangeset)]
+#[table_name = "posts"]
+pub struct PostUpdateAccess {
+    title: Option<String>,
+    body: Option<String>,
+    published: Option<bool>,
+}
+
+impl PostUpdateAccess {
+    pub fn new(title: Option<String>, body: Option<String>, published: Option<bool>) -> PostUpdateAccess {
+        PostUpdateAccess {
+            title,
+            body,
+            published,
+        }
+    }
+}
 
 pub struct PostTable<'a> {
     connection: &'a PgConnection,
@@ -21,7 +39,7 @@ impl<'a> PostTable<'a> {
             .get_result::<Post>(self.connection)
     }
 
-    pub fn update(&self, target_id: i32, update_post: UpdatePost) -> Result<(), diesel::result::Error> {
+    pub fn update(&self, target_id: i32, update_post: PostUpdateAccess) -> Result<(), diesel::result::Error> {
         let _result = diesel::update(dsl::posts.find(target_id))
             .set(&update_post)
             .get_result::<Post>(self.connection)?;
@@ -66,7 +84,7 @@ mod test {
 
         let new_post2 = NewPost::new("unit test title222", "unit test body222", false);
         let created_posts2 = post_table.create(new_post2).unwrap();
-        let _published_post = post_table.update(created_posts2.id, UpdatePost::new(None, None, Some(true)));
+        let _published_post = post_table.update(created_posts2.id, PostUpdateAccess::new(None, None, Some(true)));
 
         let posts = post_table.show(2, 1).unwrap();
 
@@ -79,7 +97,7 @@ mod test {
 
         assert_eq!(result, ["unit test title222", "unit test title111"]);
 
-        let update_post = UpdatePost::new(Some("update test title333".to_string()), Some("update test body333".to_string()), None);
+        let update_post = PostUpdateAccess::new(Some("update test title333".to_string()), Some("update test body333".to_string()), None);
         let _result = post_table.update(created_posts2.id, update_post);
         let posts = post_table.show(1, 1).unwrap();
 

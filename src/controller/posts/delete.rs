@@ -1,32 +1,17 @@
 use actix_web::{web, HttpResponse};
-use serde::{Deserialize, Serialize};
-use crate::driver::posts::{PostTable};
 use crate::driver::pool::DbPool;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct JsonBody {
-    id: i32,
-}
-
-impl JsonBody {
-    /// mod.tsでシナリオテストするために利用.
-    #[allow(dead_code)]
-    pub fn new(id: i32) -> JsonBody {
-        JsonBody {
-            id,
-        }
-    }
-}
+use crate::usecase::post_delete::{self, InputData};
 
 pub async fn index(
     pool: web::Data<DbPool>,
-    item: web::Json<JsonBody>,
+    item: web::Json<InputData>,
 ) -> HttpResponse {
     let connection = pool.get().expect("couldn't get driver connection from pool");
-    let post_table = PostTable::new(&connection);
+    let input = item.into_inner();
+    let id = input.id;
 
-    match post_table.delete(item.id) {
-        Ok(_v) => HttpResponse::Ok().body(format!("delete post [{}]", item.id)),
+    match post_delete::execute(&connection, input) {
+        Ok(_v) => HttpResponse::Ok().body(format!("delete post [{}]", id)),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
 }
