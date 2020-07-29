@@ -2,7 +2,7 @@ use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use crate::schema::posts;
 use crate::schema::posts::dsl;
-use crate::domain::entity::posts::{NewPost, Post};
+use crate::domain::entity::posts::{Post};
 
 #[derive(AsChangeset)]
 #[table_name = "posts"]
@@ -22,6 +22,24 @@ impl PostUpdateAccess {
     }
 }
 
+#[derive(Insertable)]
+#[table_name = "posts"]
+pub struct PostNewAccess<'a> {
+    title: &'a str,
+    body: &'a str,
+    published: bool,
+}
+
+impl<'a> PostNewAccess<'a> {
+    pub fn new(title: &'a str, body: &'a str, published: bool) -> PostNewAccess<'a> {
+        PostNewAccess {
+            title,
+            body,
+            published,
+        }
+    }
+}
+
 pub struct PostTable<'a> {
     connection: &'a PgConnection,
 }
@@ -33,7 +51,7 @@ impl<'a> PostTable<'a> {
         }
     }
 
-    pub fn create(&self, post: NewPost) -> Result<Post, diesel::result::Error> {
+    pub fn create(&self, post: PostNewAccess) -> Result<Post, diesel::result::Error> {
         diesel::insert_into(posts::table)
             .values(post)
             .get_result::<Post>(self.connection)
@@ -79,10 +97,10 @@ mod test {
         let connection = test_util::connection_init();
         let post_table = PostTable::new(&connection);
 
-        let new_post1 = NewPost::new("unit test title111", "unit test body111", true);
+        let new_post1 = PostNewAccess::new("unit test title111", "unit test body111", true);
         let created_posts1 = post_table.create(new_post1).unwrap();
 
-        let new_post2 = NewPost::new("unit test title222", "unit test body222", false);
+        let new_post2 = PostNewAccess::new("unit test title222", "unit test body222", false);
         let created_posts2 = post_table.create(new_post2).unwrap();
         let _published_post = post_table.update(created_posts2.id, PostUpdateAccess::new(None, None, Some(true)));
 

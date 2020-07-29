@@ -1,25 +1,6 @@
 use chrono::{NaiveDateTime};
 use chrono::naive::serde::ts_seconds::{serialize, deserialize};
 use serde::{Deserialize, Serialize};
-use crate::schema::posts;
-
-#[derive(Insertable)]
-#[table_name = "posts"]
-pub struct NewPost<'a> {
-    title: &'a str,
-    body: &'a str,
-    published: bool,
-}
-
-impl<'a> NewPost<'a> {
-    pub fn new(title: &'a str, body: &'a str, published: bool) -> NewPost<'a> {
-        NewPost {
-            title,
-            body,
-            published,
-        }
-    }
-}
 
 #[derive(Debug, Queryable, Serialize, Deserialize)]
 pub struct Post {
