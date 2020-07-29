@@ -2,7 +2,7 @@ use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use crate::schema::tags;
 use crate::schema::posts_tags;
-use crate::domain::entity::tags::Tag;
+use crate::domain::entity::tags::{Tag, PostTag};
 
 #[derive(AsChangeset)]
 #[table_name = "tags"]
@@ -69,15 +69,12 @@ impl<'a> TagsTable<'a> {
         Ok(())
     }
 
-    pub fn find_by_post(&self, post_ids: Vec<i32>) -> Result<Vec<Tag>, diesel::result::Error> {
-        let tag_ids: Vec<i32> = posts_tags::dsl::posts_tags
+    pub fn find_by_post_ids(&self, post_ids: Vec<i32>) -> Result<Vec<PostTag>, diesel::result::Error> {
+        posts_tags::dsl::posts_tags
             .filter(posts_tags::dsl::post_id.eq_any(post_ids))
-            .select(posts_tags::tag_id)
-            .load::<i32>(self.connection)?;
-
-        tags::dsl::tags
-            .filter(tags::id.eq_any(tag_ids))
-            .load::<Tag>(self.connection)
+            .inner_join(tags::dsl::tags.on(tags::dsl::id.eq(posts_tags::dsl::tag_id)))
+            .select((posts_tags::tag_id, posts_tags::post_id, tags::dsl::name, tags::dsl::slug))
+            .load::<PostTag>(self.connection)
     }
 
     pub fn all_tags(&self) -> Result<Vec<Tag>, diesel::result::Error> {
@@ -120,7 +117,7 @@ mod test {
         let _register_result = tags_table.register_tag_post(created_posts.id, created_tag.id);
 
         let tag = tags_table
-            .find_by_post(vec![created_posts.id])
+            .find_by_post_ids(vec![created_posts.id])
             .unwrap();
         let tag = tag
             .iter()
@@ -134,7 +131,7 @@ mod test {
         let _result = tags_table.update(created_tag.id, update_tag);
 
         let tag = tags_table
-            .find_by_post(vec![created_posts.id])
+            .find_by_post_ids(vec![created_posts.id])
             .unwrap();
         let tag = tag
             .iter()
@@ -156,7 +153,7 @@ mod test {
         let _result = tags_table.delete(created_tag.id);
 
         let all_tags = tags_table
-            .find_by_post(vec![created_posts.id]);
+            .find_by_post_ids(vec![created_posts.id]);
 
         assert!(all_tags.is_err());
     }
