@@ -2,7 +2,7 @@ use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use crate::schema::tags;
 use crate::schema::posts_tags;
-use crate::model::tags::{NewTag, Tag, PostsTag, UpdateTag};
+use crate::domain::entity::tags::{NewTag, Tag, PostsTag, UpdateTag};
 
 pub struct TagsTable<'a> {
     connection: &'a PgConnection,
@@ -66,7 +66,7 @@ impl<'a> TagsTable<'a> {
 mod test {
     use super::*;
     use crate::db::pool::{test_util};
-    use crate::model::posts::{NewPost};
+    use crate::domain::entity::posts::{NewPost};
     use crate::db::posts::PostTable;
 
     #[test]

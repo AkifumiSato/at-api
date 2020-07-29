@@ -24,7 +24,7 @@ mod tests {
     use diesel::r2d2::{self, ConnectionManager};
     use diesel::pg::PgConnection;
     use crate::db::pool::{env_database_url, TestTransaction, DbPool};
-    use crate::model::posts::Post;
+    use crate::domain::entity::posts::Post;
 
     fn setup_connection_pool() -> DbPool {
         let manager = ConnectionManager::<PgConnection>::new(env_database_url());

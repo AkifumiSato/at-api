@@ -2,7 +2,7 @@ use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 use crate::db::pool::DbPool;
 use crate::db::tags::{TagsTable};
-use crate::model::tags::UpdateTag;
+use crate::domain::entity::tags::UpdateTag;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JsonBody {

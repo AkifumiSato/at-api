@@ -2,7 +2,7 @@ use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use crate::schema::posts;
 use crate::schema::posts::dsl;
-use crate::model::posts::{NewPost, UpdatePost, Post};
+use crate::domain::entity::posts::{NewPost, UpdatePost, Post};
 
 pub struct PostTable<'a> {
     connection: &'a PgConnection,

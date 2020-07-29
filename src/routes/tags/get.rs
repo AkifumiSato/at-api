@@ -2,7 +2,7 @@ use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
 use crate::db::tags::{TagsTable};
 use crate::db::pool::DbPool;
-use crate::model::tags::Tag;
+use crate::domain::entity::tags::Tag;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Response {
