@@ -1,7 +1,6 @@
 use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
-use crate::driver::tags::{TagsTable};
-use crate::domain::entity::tags::UpdateTag;
+use crate::driver::tags::{TagsTable, TagUpdateAccess};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
@@ -11,8 +10,8 @@ pub struct InputData {
 }
 
 impl InputData {
-    pub fn to_update_tag(&self) -> UpdateTag {
-        UpdateTag::new(self.name.clone(), self.slug.clone())
+    pub fn to_update_tag(&self) -> TagUpdateAccess {
+        TagUpdateAccess::new(self.name.clone(), self.slug.clone())
     }
 }
 

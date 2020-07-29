@@ -2,7 +2,23 @@ use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use crate::schema::tags;
 use crate::schema::posts_tags;
-use crate::domain::entity::tags::{Tag, PostsTag, UpdateTag};
+use crate::domain::entity::tags::Tag;
+
+#[derive(AsChangeset)]
+#[table_name = "tags"]
+pub struct TagUpdateAccess {
+    name: Option<String>,
+    slug: Option<String>,
+}
+
+impl TagUpdateAccess {
+    pub fn new(name: Option<String>, slug: Option<String>) -> TagUpdateAccess {
+        TagUpdateAccess {
+            name,
+            slug,
+        }
+    }
+}
 
 #[derive(Insertable)]
 #[table_name = "tags"]
@@ -18,6 +34,12 @@ impl NewTag {
             slug,
         }
     }
+}
+
+#[derive(Debug, Queryable, Insertable)]
+pub struct PostsTag {
+    pub post_id: i32,
+    pub tag_id: i32,
 }
 
 pub struct TagsTable<'a> {
@@ -64,7 +86,7 @@ impl<'a> TagsTable<'a> {
             .load::<Tag>(self.connection)
     }
 
-    pub fn update(&self, target_id: i32, update_tag: UpdateTag) -> Result<(), diesel::result::Error> {
+    pub fn update(&self, target_id: i32, update_tag: TagUpdateAccess) -> Result<(), diesel::result::Error> {
         let _result = diesel::update(tags::dsl::tags.find(target_id))
             .set(&update_tag)
             .get_result::<Tag>(self.connection)?;
@@ -108,7 +130,7 @@ mod test {
         assert_eq!(tag.name, "test name");
         assert_eq!(tag.slug, "test slug");
 
-        let update_tag = UpdateTag::new(Some("update test name111".to_string()), Some("update test slug111".to_string()));
+        let update_tag = TagUpdateAccess::new(Some("update test name111".to_string()), Some("update test slug111".to_string()));
         let _result = tags_table.update(created_tag.id, update_tag);
 
         let tag = tags_table
