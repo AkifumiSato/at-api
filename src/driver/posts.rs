@@ -3,6 +3,8 @@ use diesel::pg::PgConnection;
 use crate::schema::posts;
 use crate::schema::posts::dsl;
 use crate::domain::entity::posts::{Post};
+use crate::usecase::article_find::ArticleFindDataAccess;
+use crate::usecase::error::DataAccessError;
 
 #[derive(AsChangeset)]
 #[table_name = "posts"]
@@ -74,16 +76,28 @@ impl<'a> PostTable<'a> {
             .load::<Post>(self.connection)
     }
 
-    pub fn find(&self, id: i32) -> Result<Option<Post>, diesel::result::Error> {
-        dsl::posts.find(id)
-            .first::<Post>(self.connection)
-            .optional()
-    }
-
     pub fn delete(&self, target_id: i32) -> Result<(), diesel::result::Error> {
         diesel::delete(dsl::posts.find(target_id))
             .execute(self.connection)?;
         Ok(())
+    }
+}
+
+
+fn parse_data_access_result<T>(result: Result<T, diesel::result::Error>) -> Result<T, DataAccessError> {
+    match result {
+        Ok(data) => Ok(data),
+        Err(_) => Err(DataAccessError::InternalError),
+    }
+}
+
+impl<'a> ArticleFindDataAccess for PostTable<'a> {
+    fn find(&self, id: i32) -> Result<Option<Post>, DataAccessError> {
+        let result = dsl::posts.find(id)
+            .first::<Post>(self.connection)
+            .optional();
+
+        parse_data_access_result(result)
     }
 }
 

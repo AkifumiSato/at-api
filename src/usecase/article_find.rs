@@ -1,7 +1,6 @@
-use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
-use crate::driver::posts::PostTable;
-use crate::domain::entity::posts::{Post,};
+use crate::domain::entity::posts::{Post};
+use crate::usecase::error::DataAccessError;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
@@ -13,9 +12,13 @@ pub struct OutputData {
     pub result: Option<Post>,
 }
 
-pub fn execute(connection: &PgConnection, input: InputData) -> Result<OutputData, diesel::result::Error> {
-    let post_table = PostTable::new(&connection);
+pub trait ArticleFindDataAccess {
+    fn find(&self, id: i32) -> Result<Option<Post>, DataAccessError>;
+}
 
+pub fn execute<T>(post_table: T, input: InputData) -> Result<OutputData, DataAccessError>
+where T: ArticleFindDataAccess
+{
     let result = post_table.find(input.id)?;
     Ok(OutputData {
         result,
