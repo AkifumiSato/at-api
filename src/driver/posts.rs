@@ -5,6 +5,7 @@ use crate::schema::posts::dsl;
 use crate::usecase::article_find::ArticleFindDataAccess;
 use crate::usecase::article_list_get::ArticleListDataAccess;
 use crate::usecase::error::DataAccessError;
+use crate::usecase::post_create::{CreatePostDataAccess, InputData};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
@@ -103,6 +104,18 @@ impl<'a> ArticleListDataAccess for PostTable<'a> {
             .offset(offset as i64)
             .order(dsl::id.desc())
             .load::<Post>(self.connection);
+
+        self.parse_data_access_result(result)
+    }
+}
+
+impl<'a> CreatePostDataAccess for PostTable<'a> {
+    fn create(&self, input: InputData) -> Result<Post, DataAccessError> {
+        let new_post = PostNewAccess::new(&input.title, &input.body, input.published);
+
+        let result = diesel::insert_into(posts::table)
+            .values(new_post)
+            .get_result::<Post>(self.connection);
 
         self.parse_data_access_result(result)
     }
