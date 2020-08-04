@@ -1,5 +1,5 @@
-use chrono::{NaiveDateTime};
-use chrono::naive::serde::ts_seconds::{serialize, deserialize};
+use chrono::naive::serde::ts_seconds::{deserialize, serialize};
+use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Queryable, Serialize, Deserialize)]

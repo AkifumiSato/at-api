@@ -1,6 +1,6 @@
+use crate::driver::posts::{PostTable, PostUpdateAccess};
 use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
-use crate::driver::posts::{PostTable, PostUpdateAccess};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
@@ -12,17 +12,26 @@ pub struct InputData {
 
 impl InputData {
     #[cfg(test)]
-    pub fn new<'a>(id: i32, title: Option<&'a str>, body: Option<&'a str>, published: Option<bool>) -> InputData {
+    pub fn new<'a>(
+        id: i32,
+        title: Option<&'a str>,
+        body: Option<&'a str>,
+        published: Option<bool>,
+    ) -> InputData {
         InputData {
             id,
-            title: title.map(|v|  v.to_string()),
-            body: body.map(|v|  v.to_string()),
+            title: title.map(|v| v.to_string()),
+            body: body.map(|v| v.to_string()),
             published,
         }
     }
 
     pub fn to_update_post(&self) -> PostUpdateAccess {
-        PostUpdateAccess::new(self.title.clone(), self.body.clone(), self.published.clone())
+        PostUpdateAccess::new(
+            self.title.clone(),
+            self.body.clone(),
+            self.published.clone(),
+        )
     }
 }
 

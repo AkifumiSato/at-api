@@ -1,12 +1,11 @@
-use actix_web::{web, HttpResponse};
 use crate::driver::pool::DbPool;
 use crate::usecase::tag_delete::{self, InputData};
+use actix_web::{web, HttpResponse};
 
-pub async fn index(
-    pool: web::Data<DbPool>,
-    item: web::Json<InputData>,
-) -> HttpResponse {
-    let connection = pool.get().expect("couldn't get driver connection from pool");
+pub async fn index(pool: web::Data<DbPool>, item: web::Json<InputData>) -> HttpResponse {
+    let connection = pool
+        .get()
+        .expect("couldn't get driver connection from pool");
     let input = item.into_inner();
     let id = input.id;
 

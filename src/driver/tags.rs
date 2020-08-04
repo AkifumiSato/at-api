@@ -1,11 +1,11 @@
-use diesel::prelude::*;
-use diesel::pg::PgConnection;
-use crate::schema::tags;
+use crate::domain::entity::tags::{PostTag, Tag};
+use crate::driver::data_access::DataAccess;
 use crate::schema::posts_tags;
-use crate::domain::entity::tags::{Tag, PostTag};
+use crate::schema::tags;
 use crate::usecase::article_list_get::TagFindsDataAccess;
 use crate::usecase::error::DataAccessError;
-use crate::driver::data_access::DataAccess;
+use diesel::pg::PgConnection;
+use diesel::prelude::*;
 
 #[derive(AsChangeset)]
 #[table_name = "tags"]
@@ -16,10 +16,7 @@ pub struct TagUpdateAccess {
 
 impl TagUpdateAccess {
     pub fn new(name: Option<String>, slug: Option<String>) -> TagUpdateAccess {
-        TagUpdateAccess {
-            name,
-            slug,
-        }
+        TagUpdateAccess { name, slug }
     }
 }
 
@@ -32,10 +29,7 @@ pub struct NewTag {
 
 impl NewTag {
     pub fn new(name: String, slug: String) -> NewTag {
-        NewTag {
-            name,
-            slug,
-        }
+        NewTag { name, slug }
     }
 }
 
@@ -51,9 +45,7 @@ pub struct TagsTable<'a> {
 
 impl<'a> TagsTable<'a> {
     pub fn new(connection: &'a PgConnection) -> TagsTable<'a> {
-        TagsTable {
-            connection,
-        }
+        TagsTable { connection }
     }
 
     pub fn create(&self, tags: NewTag) -> Result<Tag, diesel::result::Error> {
@@ -62,12 +54,13 @@ impl<'a> TagsTable<'a> {
             .get_result::<Tag>(self.connection)
     }
 
-    pub fn register_tag_post(&self, post_id: i32, tag_id: i32) -> Result<(), diesel::result::Error> {
+    pub fn register_tag_post(
+        &self,
+        post_id: i32,
+        tag_id: i32,
+    ) -> Result<(), diesel::result::Error> {
         diesel::insert_into(posts_tags::table)
-            .values(PostsTag {
-                post_id,
-                tag_id,
-            })
+            .values(PostsTag { post_id, tag_id })
             .execute(self.connection)?;
         Ok(())
     }
@@ -78,7 +71,11 @@ impl<'a> TagsTable<'a> {
             .load::<Tag>(self.connection)
     }
 
-    pub fn update(&self, target_id: i32, update_tag: TagUpdateAccess) -> Result<(), diesel::result::Error> {
+    pub fn update(
+        &self,
+        target_id: i32,
+        update_tag: TagUpdateAccess,
+    ) -> Result<(), diesel::result::Error> {
         let _result = diesel::update(tags::dsl::tags.find(target_id))
             .set(&update_tag)
             .get_result::<Tag>(self.connection)?;
@@ -86,8 +83,7 @@ impl<'a> TagsTable<'a> {
     }
 
     pub fn delete(&self, target_id: i32) -> Result<(), diesel::result::Error> {
-        diesel::delete(tags::dsl::tags.find(target_id))
-            .execute(self.connection)?;
+        diesel::delete(tags::dsl::tags.find(target_id)).execute(self.connection)?;
         Ok(())
     }
 }
@@ -99,7 +95,12 @@ impl<'a> TagFindsDataAccess for TagsTable<'a> {
         let result = posts_tags::dsl::posts_tags
             .filter(posts_tags::dsl::post_id.eq_any(post_ids))
             .inner_join(tags::dsl::tags.on(tags::dsl::id.eq(posts_tags::dsl::tag_id)))
-            .select((posts_tags::tag_id, posts_tags::post_id, tags::dsl::name, tags::dsl::slug))
+            .select((
+                posts_tags::tag_id,
+                posts_tags::post_id,
+                tags::dsl::name,
+                tags::dsl::slug,
+            ))
             .load::<PostTag>(self.connection);
 
         self.parse_data_access_result(result)
@@ -109,8 +110,8 @@ impl<'a> TagFindsDataAccess for TagsTable<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::driver::pool::{test_util};
-    use crate::driver::posts::{PostTable, PostNewAccess};
+    use crate::driver::pool::test_util;
+    use crate::driver::posts::{PostNewAccess, PostTable};
 
     #[test]
     fn tags_scenario() {
@@ -125,27 +126,20 @@ mod test {
         let created_tag = tags_table.create(new_tag).unwrap();
         let _register_result = tags_table.register_tag_post(created_posts.id, created_tag.id);
 
-        let tag = tags_table
-            .find_by_post_ids(vec![created_posts.id])
-            .unwrap();
-        let tag = tag
-            .iter()
-            .next()
-            .unwrap();
+        let tag = tags_table.find_by_post_ids(vec![created_posts.id]).unwrap();
+        let tag = tag.iter().next().unwrap();
 
         assert_eq!(tag.name, "test name");
         assert_eq!(tag.slug, "test slug");
 
-        let update_tag = TagUpdateAccess::new(Some("update test name111".to_string()), Some("update test slug111".to_string()));
+        let update_tag = TagUpdateAccess::new(
+            Some("update test name111".to_string()),
+            Some("update test slug111".to_string()),
+        );
         let _result = tags_table.update(created_tag.id, update_tag);
 
-        let tag = tags_table
-            .find_by_post_ids(vec![created_posts.id])
-            .unwrap();
-        let tag = tag
-            .iter()
-            .next()
-            .unwrap();
+        let tag = tags_table.find_by_post_ids(vec![created_posts.id]).unwrap();
+        let tag = tag.iter().next().unwrap();
 
         assert_eq!(tag.name, "update test name111");
         assert_eq!(tag.slug, "update test slug111");
@@ -161,8 +155,7 @@ mod test {
 
         let _result = tags_table.delete(created_tag.id);
 
-        let all_tags = tags_table
-            .find_by_post_ids(vec![created_posts.id]);
+        let all_tags = tags_table.find_by_post_ids(vec![created_posts.id]);
 
         assert!(all_tags.is_err());
     }

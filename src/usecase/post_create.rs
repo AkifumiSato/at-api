@@ -1,7 +1,7 @@
+use crate::domain::entity::posts::Post;
+use crate::driver::posts::{PostNewAccess, PostTable};
 use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
-use crate::driver::posts::{PostTable, PostNewAccess};
-use crate::domain::entity::posts::{Post};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {

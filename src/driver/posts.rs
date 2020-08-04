@@ -1,12 +1,12 @@
-use diesel::prelude::*;
-use diesel::pg::PgConnection;
+use crate::domain::entity::posts::Post;
+use crate::driver::data_access::DataAccess;
 use crate::schema::posts;
 use crate::schema::posts::dsl;
-use crate::domain::entity::posts::{Post};
 use crate::usecase::article_find::ArticleFindDataAccess;
-use crate::usecase::error::DataAccessError;
 use crate::usecase::article_list_get::ArticleListDataAccess;
-use crate::driver::data_access::DataAccess;
+use crate::usecase::error::DataAccessError;
+use diesel::pg::PgConnection;
+use diesel::prelude::*;
 
 #[derive(AsChangeset)]
 #[table_name = "posts"]
@@ -17,7 +17,11 @@ pub struct PostUpdateAccess {
 }
 
 impl PostUpdateAccess {
-    pub fn new(title: Option<String>, body: Option<String>, published: Option<bool>) -> PostUpdateAccess {
+    pub fn new(
+        title: Option<String>,
+        body: Option<String>,
+        published: Option<bool>,
+    ) -> PostUpdateAccess {
         PostUpdateAccess {
             title,
             body,
@@ -50,9 +54,7 @@ pub struct PostTable<'a> {
 
 impl<'a> PostTable<'a> {
     pub fn new(connection: &'a PgConnection) -> PostTable<'a> {
-        PostTable {
-            connection,
-        }
+        PostTable { connection }
     }
 
     pub fn create(&self, post: PostNewAccess) -> Result<Post, diesel::result::Error> {
@@ -61,7 +63,11 @@ impl<'a> PostTable<'a> {
             .get_result::<Post>(self.connection)
     }
 
-    pub fn update(&self, target_id: i32, update_post: PostUpdateAccess) -> Result<(), diesel::result::Error> {
+    pub fn update(
+        &self,
+        target_id: i32,
+        update_post: PostUpdateAccess,
+    ) -> Result<(), diesel::result::Error> {
         let _result = diesel::update(dsl::posts.find(target_id))
             .set(&update_post)
             .get_result::<Post>(self.connection)?;
@@ -69,8 +75,7 @@ impl<'a> PostTable<'a> {
     }
 
     pub fn delete(&self, target_id: i32) -> Result<(), diesel::result::Error> {
-        diesel::delete(dsl::posts.find(target_id))
-            .execute(self.connection)?;
+        diesel::delete(dsl::posts.find(target_id)).execute(self.connection)?;
         Ok(())
     }
 }
@@ -79,7 +84,8 @@ impl<'a> DataAccess for PostTable<'a> {}
 
 impl<'a> ArticleFindDataAccess for PostTable<'a> {
     fn find(&self, id: i32) -> Result<Option<Post>, DataAccessError> {
-        let result = dsl::posts.find(id)
+        let result = dsl::posts
+            .find(id)
             .first::<Post>(self.connection)
             .optional();
 
@@ -87,11 +93,12 @@ impl<'a> ArticleFindDataAccess for PostTable<'a> {
     }
 }
 
-impl<'a> ArticleListDataAccess for PostTable<'a>{
+impl<'a> ArticleListDataAccess for PostTable<'a> {
     fn show(&self, count: i32, page: i32) -> Result<Vec<Post>, DataAccessError> {
         let offset = count * (page - 1);
 
-        let result = dsl::posts.filter(dsl::published.eq(true))
+        let result = dsl::posts
+            .filter(dsl::published.eq(true))
             .limit(count as i64)
             .offset(offset as i64)
             .order(dsl::id.desc())
@@ -104,7 +111,7 @@ impl<'a> ArticleListDataAccess for PostTable<'a>{
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::driver::pool::{test_util};
+    use crate::driver::pool::test_util;
 
     #[test]
     fn scenario() {
@@ -116,20 +123,25 @@ mod test {
 
         let new_post2 = PostNewAccess::new("unit test title222", "unit test body222", false);
         let created_posts2 = post_table.create(new_post2).unwrap();
-        let _published_post = post_table.update(created_posts2.id, PostUpdateAccess::new(None, None, Some(true)));
+        let _published_post = post_table.update(
+            created_posts2.id,
+            PostUpdateAccess::new(None, None, Some(true)),
+        );
 
         let posts = post_table.show(2, 1).unwrap();
 
         let result = posts
             .iter()
-            .map(|item| {
-                item.title.clone()
-            })
+            .map(|item| item.title.clone())
             .collect::<Vec<String>>();
 
         assert_eq!(result, ["unit test title222", "unit test title111"]);
 
-        let update_post = PostUpdateAccess::new(Some("update test title333".to_string()), Some("update test body333".to_string()), None);
+        let update_post = PostUpdateAccess::new(
+            Some("update test title333".to_string()),
+            Some("update test body333".to_string()),
+            None,
+        );
         let _result = post_table.update(created_posts2.id, update_post);
         let posts = post_table.show(1, 1).unwrap();
 

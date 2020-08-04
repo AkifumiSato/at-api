@@ -1,9 +1,9 @@
-use actix_web::{HttpResponse, web};
-use serde::{Deserialize, Serialize};
 use crate::driver::pool::DbPool;
-use crate::usecase::article_list_get::{self, InputData};
 use crate::driver::posts::PostTable;
 use crate::driver::tags::TagsTable;
+use crate::usecase::article_list_get::{self, InputData};
+use actix_web::{web, HttpResponse};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetParams {
@@ -16,18 +16,14 @@ impl GetParams {
         let page = self.page.unwrap_or_else(|| 1);
         let count = self.count.unwrap_or_else(|| 10);
 
-        InputData {
-            page,
-            count,
-        }
+        InputData { page, count }
     }
 }
 
-pub async fn index(
-    pool: web::Data<DbPool>,
-    item: web::Query<GetParams>,
-) -> HttpResponse {
-    let connection = pool.get().expect("couldn't get driver connection from pool");
+pub async fn index(pool: web::Data<DbPool>, item: web::Query<GetParams>) -> HttpResponse {
+    let connection = pool
+        .get()
+        .expect("couldn't get driver connection from pool");
     let post_table = PostTable::new(&connection);
     let tags_table = TagsTable::new(&connection);
 

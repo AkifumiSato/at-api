@@ -1,6 +1,6 @@
+use crate::driver::tags::TagsTable;
 use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
-use crate::driver::tags::{TagsTable};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {

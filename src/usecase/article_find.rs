@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
-use crate::domain::entity::posts::{Post};
+use crate::domain::entity::posts::Post;
 use crate::usecase::error::DataAccessError;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
@@ -17,10 +17,9 @@ pub trait ArticleFindDataAccess {
 }
 
 pub fn execute<T>(post_table: T, input: InputData) -> Result<OutputData, DataAccessError>
-where T: ArticleFindDataAccess
+where
+    T: ArticleFindDataAccess,
 {
     let result = post_table.find(input.id)?;
-    Ok(OutputData {
-        result,
-    })
+    Ok(OutputData { result })
 }

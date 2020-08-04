@@ -1,6 +1,6 @@
+use crate::driver::posts::PostTable;
 use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
-use crate::driver::posts::PostTable;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
@@ -10,9 +10,7 @@ pub struct InputData {
 impl InputData {
     #[cfg(test)]
     pub fn new<'a>(id: i32) -> InputData {
-        InputData {
-            id,
-        }
+        InputData { id }
     }
 }
 
