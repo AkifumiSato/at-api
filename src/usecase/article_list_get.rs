@@ -1,11 +1,9 @@
-use diesel::PgConnection;
-use serde::{Deserialize, Serialize};
-use chrono::NaiveDateTime;
-use chrono::naive::serde::ts_seconds::{serialize, deserialize};
-use crate::driver::posts::PostTable;
-use crate::domain::entity::posts::{Post};
-use crate::driver::tags::TagsTable;
+use crate::domain::entity::posts::Post;
 use crate::domain::entity::tags::PostTag;
+use crate::usecase::error::DataAccessError;
+use chrono::naive::serde::ts_seconds::{deserialize, serialize};
+use chrono::NaiveDateTime;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
@@ -64,38 +62,40 @@ pub struct OutputData {
     pub result: Vec<PostItemOutput>,
 }
 
-pub fn execute(connection: &PgConnection, input: InputData) -> Result<OutputData, diesel::result::Error> {
-    let post_table = PostTable::new(&connection);
-    let tags_table = TagsTable::new(&connection);
+pub trait ArticleListDataAccess {
+    fn show(&self, count: i32, page: i32) -> Result<Vec<Post>, DataAccessError>;
+}
 
-    let posts = post_table.show(input.count, input.page)?;
-    let post_ids = posts
+pub trait TagFindsDataAccess {
+    fn find_by_post_ids(&self, post_ids: Vec<i32>) -> Result<Vec<PostTag>, DataAccessError>;
+}
+
+pub fn execute<T, U>(
+    article_data_access: T,
+    tags_data_access: U,
+    input: InputData,
+) -> Result<OutputData, DataAccessError>
+where
+    T: ArticleListDataAccess,
+    U: TagFindsDataAccess,
+{
+    let posts = article_data_access.show(input.count, input.page)?;
+    let post_ids = posts.iter().map(|post| post.id).collect::<Vec<i32>>();
+    let tags = tags_data_access.find_by_post_ids(post_ids)?;
+
+    let result = posts
         .iter()
-        .map(|post| {
-            post.id
-        })
-        .collect::<Vec<i32>>();
-    let tags = tags_table.find_by_post_ids(post_ids)?;
-
-    let result = posts.
-        iter()
         .map(|post| {
             let filtered_tags = tags
                 .iter()
-                .filter(|tag| {
-                    tag.post_id == post.id
-                })
-                .map(|tag| {
-                    tag.to_output()
-                })
+                .filter(|tag| tag.post_id == post.id)
+                .map(|tag| tag.to_output())
                 .collect::<Vec<PostTagOutput>>();
 
-                post.to_output(filtered_tags)
+            post.to_output(filtered_tags)
         })
         .collect::<Vec<PostItemOutput>>();
 
     // let result = post_table.show(input.count, input.page)?;
-    Ok(OutputData {
-        result,
-    })
+    Ok(OutputData { result })
 }

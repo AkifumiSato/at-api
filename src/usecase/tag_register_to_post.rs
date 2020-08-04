@@ -1,6 +1,5 @@
-use diesel::PgConnection;
+use crate::usecase::error::DataAccessError;
 use serde::{Deserialize, Serialize};
-use crate::driver::tags::{TagsTable};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
@@ -8,8 +7,13 @@ pub struct InputData {
     pub tag_id: i32,
 }
 
-pub fn execute(connection: &PgConnection, input: InputData) -> Result<(), diesel::result::Error> {
-    let tags_table = TagsTable::new(&connection);
+pub trait RegisterTagPostDataAccess {
+    fn register_tag_post(&self, post_id: i32, tag_id: i32) -> Result<(), DataAccessError>;
+}
 
-    tags_table.register_tag_post(input.post_id, input.tag_id)
+pub fn execute<T>(data_access: T, input: InputData) -> Result<(), DataAccessError>
+where
+    T: RegisterTagPostDataAccess,
+{
+    data_access.register_tag_post(input.post_id, input.tag_id)
 }

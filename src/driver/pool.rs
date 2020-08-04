@@ -1,6 +1,6 @@
+use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager, CustomizeConnection};
-use diesel::pg::PgConnection;
 use dotenv::dotenv;
 use std::env;
 
@@ -8,8 +8,7 @@ pub type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 pub fn env_database_url() -> String {
     dotenv().ok();
-    env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set")
+    env::var("DATABASE_URL").expect("DATABASE_URL must be set")
 }
 
 /// テスト時にCommitしないtransactionを提供するtrait.
@@ -33,15 +32,11 @@ pub fn env_database_url() -> String {
 pub struct TestTransaction;
 
 impl CustomizeConnection<PgConnection, r2d2::Error> for TestTransaction {
-    fn on_acquire(
-        &self,
-        conn: &mut PgConnection,
-    ) -> ::std::result::Result<(), r2d2::Error> {
+    fn on_acquire(&self, conn: &mut PgConnection) -> ::std::result::Result<(), r2d2::Error> {
         conn.begin_test_transaction().unwrap();
         Ok(())
     }
 }
-
 
 #[cfg(test)]
 pub mod test_util {

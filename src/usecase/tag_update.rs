@@ -1,6 +1,5 @@
-use diesel::PgConnection;
+use crate::usecase::error::DataAccessError;
 use serde::{Deserialize, Serialize};
-use crate::driver::tags::{TagsTable, TagUpdateAccess};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
@@ -9,14 +8,13 @@ pub struct InputData {
     pub slug: Option<String>,
 }
 
-impl InputData {
-    pub fn to_update_tag(&self) -> TagUpdateAccess {
-        TagUpdateAccess::new(self.name.clone(), self.slug.clone())
-    }
+pub trait UpdateTagDataAccess {
+    fn update(&self, input: InputData) -> Result<(), DataAccessError>;
 }
 
-pub fn execute(connection: &PgConnection, input: InputData) -> Result<(), diesel::result::Error> {
-    let tags_table = TagsTable::new(&connection);
-
-    tags_table.update(input.id, input.to_update_tag())
+pub fn execute<T>(data_access: T, input: InputData) -> Result<(), DataAccessError>
+where
+    T: UpdateTagDataAccess,
+{
+    data_access.update(input)
 }

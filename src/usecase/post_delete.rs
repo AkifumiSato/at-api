@@ -1,6 +1,5 @@
-use diesel::PgConnection;
+use crate::usecase::error::DataAccessError;
 use serde::{Deserialize, Serialize};
-use crate::driver::posts::PostTable;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
@@ -10,14 +9,17 @@ pub struct InputData {
 impl InputData {
     #[cfg(test)]
     pub fn new<'a>(id: i32) -> InputData {
-        InputData {
-            id,
-        }
+        InputData { id }
     }
 }
 
-pub fn execute(connection: &PgConnection, input: InputData) -> Result<(), diesel::result::Error> {
-    let post_table = PostTable::new(&connection);
+pub trait DeletePostDataAccess {
+    fn delete(&self, target_id: i32) -> Result<(), DataAccessError>;
+}
 
-    post_table.delete(input.id)
+pub fn execute<T>(data_access: T, input: InputData) -> Result<(), DataAccessError>
+where
+    T: DeletePostDataAccess,
+{
+    data_access.delete(input.id)
 }

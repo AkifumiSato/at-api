@@ -1,7 +1,6 @@
-use diesel::PgConnection;
-use serde::{Deserialize, Serialize};
-use crate::driver::tags::{TagsTable, NewTag};
 use crate::domain::entity::tags::Tag;
+use crate::usecase::error::DataAccessError;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
@@ -9,14 +8,13 @@ pub struct InputData {
     pub slug: String,
 }
 
-impl InputData {
-    pub fn to_new_tag(&self) -> NewTag {
-        NewTag::new(self.name.clone(), self.slug.clone())
-    }
+pub trait CreateTagDataAccess {
+    fn create(&self, input: InputData) -> Result<Tag, DataAccessError>;
 }
 
-pub fn execute(connection: &PgConnection, input: InputData) -> Result<Tag, diesel::result::Error> {
-    let tags_table = TagsTable::new(&connection);
-
-    tags_table.create(input.to_new_tag())
+pub fn execute<T>(data_access: T, input: InputData) -> Result<Tag, DataAccessError>
+where
+    T: CreateTagDataAccess,
+{
+    data_access.create(input)
 }
