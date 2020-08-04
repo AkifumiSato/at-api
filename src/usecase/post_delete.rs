@@ -17,9 +17,9 @@ pub trait DeletePostDataAccess {
     fn delete(&self, target_id: i32) -> Result<(), DataAccessError>;
 }
 
-pub fn execute<T>(post_table: T, input: InputData) -> Result<(), DataAccessError>
+pub fn execute<T>(data_access: T, input: InputData) -> Result<(), DataAccessError>
 where
     T: DeletePostDataAccess,
 {
-    post_table.delete(input.id)
+    data_access.delete(input.id)
 }

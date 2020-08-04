@@ -13,9 +13,9 @@ pub trait CreatePostDataAccess {
     fn create(&self, input: InputData) -> Result<Post, DataAccessError>;
 }
 
-pub fn execute<T>(post_table: T, input: InputData) -> Result<Post, DataAccessError>
+pub fn execute<T>(data_access: T, input: InputData) -> Result<Post, DataAccessError>
 where
     T: CreatePostDataAccess,
 {
-    post_table.create(input)
+    data_access.create(input)
 }

@@ -1,5 +1,4 @@
-use crate::driver::posts::{PostTable, PostUpdateAccess};
-use diesel::PgConnection;
+use crate::usecase::error::DataAccessError;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -25,18 +24,15 @@ impl InputData {
             published,
         }
     }
-
-    pub fn to_update_post(&self) -> PostUpdateAccess {
-        PostUpdateAccess::new(
-            self.title.clone(),
-            self.body.clone(),
-            self.published.clone(),
-        )
-    }
 }
 
-pub fn execute(connection: &PgConnection, input: InputData) -> Result<(), diesel::result::Error> {
-    let post_table = PostTable::new(&connection);
+pub trait UpdateDataAccess {
+    fn update(&self, input: InputData) -> Result<(), DataAccessError>;
+}
 
-    post_table.update(input.id, input.to_update_post())
+pub fn execute<T>(data_access: T, input: InputData) -> Result<(), DataAccessError>
+where
+    T: UpdateDataAccess,
+{
+    data_access.update(input)
 }

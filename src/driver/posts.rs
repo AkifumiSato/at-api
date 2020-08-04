@@ -7,8 +7,27 @@ use crate::usecase::article_list_get::ArticleListDataAccess;
 use crate::usecase::error::DataAccessError;
 use crate::usecase::post_create::{self, CreatePostDataAccess};
 use crate::usecase::post_delete::DeletePostDataAccess;
+use crate::usecase::post_update::{self, UpdateDataAccess};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
+
+#[derive(Insertable)]
+#[table_name = "posts"]
+struct PostNewAccess<'a> {
+    title: &'a str,
+    body: &'a str,
+    published: bool,
+}
+
+impl<'a> PostNewAccess<'a> {
+    pub fn new(title: &'a str, body: &'a str, published: bool) -> PostNewAccess<'a> {
+        PostNewAccess {
+            title,
+            body,
+            published,
+        }
+    }
+}
 
 #[derive(AsChangeset)]
 #[table_name = "posts"]
@@ -32,24 +51,6 @@ impl PostUpdateAccess {
     }
 }
 
-#[derive(Insertable)]
-#[table_name = "posts"]
-struct PostNewAccess<'a> {
-    title: &'a str,
-    body: &'a str,
-    published: bool,
-}
-
-impl<'a> PostNewAccess<'a> {
-    pub fn new(title: &'a str, body: &'a str, published: bool) -> PostNewAccess<'a> {
-        PostNewAccess {
-            title,
-            body,
-            published,
-        }
-    }
-}
-
 pub struct PostTable<'a> {
     connection: &'a PgConnection,
 }
@@ -57,17 +58,6 @@ pub struct PostTable<'a> {
 impl<'a> PostTable<'a> {
     pub fn new(connection: &'a PgConnection) -> PostTable<'a> {
         PostTable { connection }
-    }
-
-    pub fn update(
-        &self,
-        target_id: i32,
-        update_post: PostUpdateAccess,
-    ) -> Result<(), diesel::result::Error> {
-        let _result = diesel::update(dsl::posts.find(target_id))
-            .set(&update_post)
-            .get_result::<Post>(self.connection)?;
-        Ok(())
     }
 }
 
@@ -114,6 +104,24 @@ impl<'a> CreatePostDataAccess for PostTable<'a> {
 impl<'a> DeletePostDataAccess for PostTable<'a> {
     fn delete(&self, target_id: i32) -> Result<(), DataAccessError> {
         let result = diesel::delete(dsl::posts.find(target_id)).execute(self.connection);
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(_) => Err(DataAccessError::InternalError),
+        }
+    }
+}
+
+impl<'a> UpdateDataAccess for PostTable<'a> {
+    fn update(&self, input: post_update::InputData) -> Result<(), DataAccessError> {
+        let result = diesel::update(dsl::posts.find(input.id))
+            .set(PostUpdateAccess::new(
+                input.title,
+                input.body,
+                input.published,
+            ))
+            .get_result::<Post>(self.connection);
+
         match result {
             Ok(_) => Ok(()),
             Err(_) => Err(DataAccessError::InternalError),
@@ -144,10 +152,12 @@ mod test {
             published: false,
         };
         let created_posts2 = post_table.create(new_input2).unwrap();
-        let _published_post = post_table.update(
+        let _published_post = post_table.update(post_update::InputData::new(
             created_posts2.id,
-            PostUpdateAccess::new(None, None, Some(true)),
-        );
+            None,
+            None,
+            Some(true),
+        ));
 
         let posts = post_table.show(2, 1).unwrap();
 
@@ -158,12 +168,13 @@ mod test {
 
         assert_eq!(result, ["unit test title222", "unit test title111"]);
 
-        let update_post = PostUpdateAccess::new(
-            Some("update test title333".to_string()),
-            Some("update test body333".to_string()),
+        let update_post = post_update::InputData::new(
+            created_posts2.id,
+            Some("update test title333"),
+            Some("update test body333"),
             None,
         );
-        let _result = post_table.update(created_posts2.id, update_post);
+        let _result = post_table.update(update_post);
         let posts = post_table.show(1, 1).unwrap();
 
         assert_eq!(posts.first().unwrap().title, "update test title333");

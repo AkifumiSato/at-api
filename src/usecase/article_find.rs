@@ -16,10 +16,10 @@ pub trait ArticleFindDataAccess {
     fn find(&self, id: i32) -> Result<Option<Post>, DataAccessError>;
 }
 
-pub fn execute<T>(post_table: T, input: InputData) -> Result<OutputData, DataAccessError>
+pub fn execute<T>(data_access: T, input: InputData) -> Result<OutputData, DataAccessError>
 where
     T: ArticleFindDataAccess,
 {
-    let result = post_table.find(input.id)?;
+    let result = data_access.find(input.id)?;
     Ok(OutputData { result })
 }

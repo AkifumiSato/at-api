@@ -71,17 +71,17 @@ pub trait TagFindsDataAccess {
 }
 
 pub fn execute<T, U>(
-    post_table: T,
-    tags_table: U,
+    article_data_access: T,
+    tags_data_access: U,
     input: InputData,
 ) -> Result<OutputData, DataAccessError>
 where
     T: ArticleListDataAccess,
     U: TagFindsDataAccess,
 {
-    let posts = post_table.show(input.count, input.page)?;
+    let posts = article_data_access.show(input.count, input.page)?;
     let post_ids = posts.iter().map(|post| post.id).collect::<Vec<i32>>();
-    let tags = tags_table.find_by_post_ids(post_ids)?;
+    let tags = tags_data_access.find_by_post_ids(post_ids)?;
 
     let result = posts
         .iter()
