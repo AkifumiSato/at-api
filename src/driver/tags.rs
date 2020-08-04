@@ -5,6 +5,7 @@ use crate::schema::tags;
 use crate::usecase::article_list_get::TagFindsDataAccess;
 use crate::usecase::error::DataAccessError;
 use crate::usecase::tag_all_get::TagAllGetDataAccess;
+use crate::usecase::tag_create::{self, CreateTagDataAccess};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
@@ -49,12 +50,6 @@ impl<'a> TagsTable<'a> {
         TagsTable { connection }
     }
 
-    pub fn create(&self, tags: NewTag) -> Result<Tag, diesel::result::Error> {
-        diesel::insert_into(tags::table)
-            .values(tags)
-            .get_result::<Tag>(self.connection)
-    }
-
     pub fn register_tag_post(
         &self,
         post_id: i32,
@@ -64,12 +59,6 @@ impl<'a> TagsTable<'a> {
             .values(PostsTag { post_id, tag_id })
             .execute(self.connection)?;
         Ok(())
-    }
-
-    pub fn all_tags(&self) -> Result<Vec<Tag>, diesel::result::Error> {
-        tags::dsl::tags
-            .distinct_on(tags::id)
-            .load::<Tag>(self.connection)
     }
 
     pub fn update(
@@ -118,6 +107,16 @@ impl<'a> TagAllGetDataAccess for TagsTable<'a> {
     }
 }
 
+impl<'a> CreateTagDataAccess for TagsTable<'a> {
+    fn create(&self, input: tag_create::InputData) -> Result<Tag, DataAccessError> {
+        let result = diesel::insert_into(tags::table)
+            .values(NewTag::new(input.name, input.slug))
+            .get_result::<Tag>(self.connection);
+
+        self.parse_data_access_result(result)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -139,7 +138,10 @@ mod test {
         };
         let created_posts = post_table.create(new_input).unwrap();
 
-        let new_tag = NewTag::new("test name".to_string(), "test slug".to_string());
+        let new_tag = tag_create::InputData {
+            name: "test name".to_string(),
+            slug: "test slug".to_string(),
+        };
         let created_tag = tags_table.create(new_tag).unwrap();
         let _register_result = tags_table.register_tag_post(created_posts.id, created_tag.id);
 
