@@ -6,6 +6,7 @@ use crate::usecase::article_list_get::TagFindsDataAccess;
 use crate::usecase::error::DataAccessError;
 use crate::usecase::tag_all_get::TagAllGetDataAccess;
 use crate::usecase::tag_create::{self, CreateTagDataAccess};
+use crate::usecase::tag_register_to_post::RegisterTagPostDataAccess;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
@@ -48,17 +49,6 @@ pub struct TagsTable<'a> {
 impl<'a> TagsTable<'a> {
     pub fn new(connection: &'a PgConnection) -> TagsTable<'a> {
         TagsTable { connection }
-    }
-
-    pub fn register_tag_post(
-        &self,
-        post_id: i32,
-        tag_id: i32,
-    ) -> Result<(), diesel::result::Error> {
-        diesel::insert_into(posts_tags::table)
-            .values(PostsTag { post_id, tag_id })
-            .execute(self.connection)?;
-        Ok(())
     }
 
     pub fn update(
@@ -114,6 +104,19 @@ impl<'a> CreateTagDataAccess for TagsTable<'a> {
             .get_result::<Tag>(self.connection);
 
         self.parse_data_access_result(result)
+    }
+}
+
+impl<'a> RegisterTagPostDataAccess for TagsTable<'a> {
+    fn register_tag_post(&self, post_id: i32, tag_id: i32) -> Result<(), DataAccessError> {
+        let result = diesel::insert_into(posts_tags::table)
+            .values(PostsTag { post_id, tag_id })
+            .execute(self.connection);
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(_) => Err(DataAccessError::InternalError),
+        }
     }
 }
 

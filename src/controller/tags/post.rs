@@ -26,8 +26,9 @@ pub async fn register(
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
+    let tags_table = TagsTable::new(&connection);
 
-    match tag_register_to_post::execute(&connection, item.into_inner()) {
+    match tag_register_to_post::execute(tags_table, item.into_inner()) {
         Ok(_) => HttpResponse::NoContent().finish(),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
