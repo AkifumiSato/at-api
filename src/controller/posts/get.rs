@@ -2,6 +2,8 @@ use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
 use crate::driver::pool::DbPool;
 use crate::usecase::article_list_get::{self, InputData};
+use crate::driver::posts::PostTable;
+use crate::driver::tags::TagsTable;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetParams {
@@ -26,8 +28,10 @@ pub async fn index(
     item: web::Query<GetParams>,
 ) -> HttpResponse {
     let connection = pool.get().expect("couldn't get driver connection from pool");
+    let post_table = PostTable::new(&connection);
+    let tags_table = TagsTable::new(&connection);
 
-    match article_list_get::execute(&connection, item.into_inner().to_input_data()) {
+    match article_list_get::execute(post_table, tags_table, item.into_inner().to_input_data()) {
         Ok(result) => HttpResponse::Ok().json(result),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

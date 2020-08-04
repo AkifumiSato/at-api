@@ -3,6 +3,9 @@ use diesel::pg::PgConnection;
 use crate::schema::tags;
 use crate::schema::posts_tags;
 use crate::domain::entity::tags::{Tag, PostTag};
+use crate::usecase::article_list_get::TagFindsDataAccess;
+use crate::usecase::error::DataAccessError;
+use crate::driver::data_access::DataAccess;
 
 #[derive(AsChangeset)]
 #[table_name = "tags"]
@@ -69,14 +72,6 @@ impl<'a> TagsTable<'a> {
         Ok(())
     }
 
-    pub fn find_by_post_ids(&self, post_ids: Vec<i32>) -> Result<Vec<PostTag>, diesel::result::Error> {
-        posts_tags::dsl::posts_tags
-            .filter(posts_tags::dsl::post_id.eq_any(post_ids))
-            .inner_join(tags::dsl::tags.on(tags::dsl::id.eq(posts_tags::dsl::tag_id)))
-            .select((posts_tags::tag_id, posts_tags::post_id, tags::dsl::name, tags::dsl::slug))
-            .load::<PostTag>(self.connection)
-    }
-
     pub fn all_tags(&self) -> Result<Vec<Tag>, diesel::result::Error> {
         tags::dsl::tags
             .distinct_on(tags::id)
@@ -94,6 +89,20 @@ impl<'a> TagsTable<'a> {
         diesel::delete(tags::dsl::tags.find(target_id))
             .execute(self.connection)?;
         Ok(())
+    }
+}
+
+impl<'a> DataAccess for TagsTable<'a> {}
+
+impl<'a> TagFindsDataAccess for TagsTable<'a> {
+    fn find_by_post_ids(&self, post_ids: Vec<i32>) -> Result<Vec<PostTag>, DataAccessError> {
+        let result = posts_tags::dsl::posts_tags
+            .filter(posts_tags::dsl::post_id.eq_any(post_ids))
+            .inner_join(tags::dsl::tags.on(tags::dsl::id.eq(posts_tags::dsl::tag_id)))
+            .select((posts_tags::tag_id, posts_tags::post_id, tags::dsl::name, tags::dsl::slug))
+            .load::<PostTag>(self.connection);
+
+        self.parse_data_access_result(result)
     }
 }
 
