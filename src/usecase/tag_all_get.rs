@@ -1,6 +1,5 @@
 use crate::domain::entity::tags::Tag;
-use crate::driver::tags::TagsTable;
-use diesel::PgConnection;
+use crate::usecase::error::DataAccessError;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -8,9 +7,14 @@ pub struct OutputData {
     pub result: Vec<Tag>,
 }
 
-pub fn execute(connection: &PgConnection) -> Result<OutputData, diesel::result::Error> {
-    let tags_table = TagsTable::new(&connection);
+pub trait TagAllGetDataAccess {
+    fn all_tags(&self) -> Result<Vec<Tag>, DataAccessError>;
+}
 
-    let result = tags_table.all_tags()?;
+pub fn execute<T>(data_access: T) -> Result<OutputData, DataAccessError>
+where
+    T: TagAllGetDataAccess,
+{
+    let result = data_access.all_tags()?;
     Ok(OutputData { result })
 }

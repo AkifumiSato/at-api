@@ -4,6 +4,7 @@ use crate::schema::posts_tags;
 use crate::schema::tags;
 use crate::usecase::article_list_get::TagFindsDataAccess;
 use crate::usecase::error::DataAccessError;
+use crate::usecase::tag_all_get::TagAllGetDataAccess;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
@@ -102,6 +103,16 @@ impl<'a> TagFindsDataAccess for TagsTable<'a> {
                 tags::dsl::slug,
             ))
             .load::<PostTag>(self.connection);
+
+        self.parse_data_access_result(result)
+    }
+}
+
+impl<'a> TagAllGetDataAccess for TagsTable<'a> {
+    fn all_tags(&self) -> Result<Vec<Tag>, DataAccessError> {
+        let result = tags::dsl::tags
+            .distinct_on(tags::id)
+            .load::<Tag>(self.connection);
 
         self.parse_data_access_result(result)
     }
