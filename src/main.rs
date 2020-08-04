@@ -3,8 +3,8 @@ extern crate my_app;
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use diesel::pg::PgConnection;
 use diesel::r2d2::{self, ConnectionManager};
-use my_app::controller;
 use my_app::driver::pool::env_database_url;
+use my_app::routes;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -26,8 +26,8 @@ async fn main() -> std::io::Result<()> {
             .data(pool.clone())
             .wrap(Logger::default())
             .data(web::JsonConfig::default().limit(4096))
-            .service(web::scope("/posts").configure(controller::posts::config))
-            .service(web::scope("/tags").configure(controller::tags::config))
+            .service(web::scope("/posts").configure(routes::posts::config))
+            .service(web::scope("/tags").configure(routes::tags::config))
     })
     .bind(&bind)?
     .run()
