@@ -6,6 +6,7 @@ use crate::usecase::article_list_get::TagFindsDataAccess;
 use crate::usecase::error::DataAccessError;
 use crate::usecase::tag_all_get::TagAllGetDataAccess;
 use crate::usecase::tag_create::{self, CreateTagDataAccess};
+use crate::usecase::tag_delete::DeleteTagDataAccess;
 use crate::usecase::tag_register_to_post::RegisterTagPostDataAccess;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
@@ -61,11 +62,6 @@ impl<'a> TagsTable<'a> {
             .get_result::<Tag>(self.connection)?;
         Ok(())
     }
-
-    pub fn delete(&self, target_id: i32) -> Result<(), diesel::result::Error> {
-        diesel::delete(tags::dsl::tags.find(target_id)).execute(self.connection)?;
-        Ok(())
-    }
 }
 
 impl<'a> DataAccess for TagsTable<'a> {}
@@ -112,6 +108,17 @@ impl<'a> RegisterTagPostDataAccess for TagsTable<'a> {
         let result = diesel::insert_into(posts_tags::table)
             .values(PostsTag { post_id, tag_id })
             .execute(self.connection);
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(_) => Err(DataAccessError::InternalError),
+        }
+    }
+}
+
+impl<'a> DeleteTagDataAccess for TagsTable<'a> {
+    fn delete(&self, target_id: i32) -> Result<(), DataAccessError> {
+        let result = diesel::delete(tags::dsl::tags.find(target_id)).execute(self.connection);
 
         match result {
             Ok(_) => Ok(()),
