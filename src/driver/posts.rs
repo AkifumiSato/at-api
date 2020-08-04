@@ -5,7 +5,8 @@ use crate::schema::posts::dsl;
 use crate::usecase::article_find::ArticleFindDataAccess;
 use crate::usecase::article_list_get::ArticleListDataAccess;
 use crate::usecase::error::DataAccessError;
-use crate::usecase::post_create::{CreatePostDataAccess, InputData};
+use crate::usecase::post_create::{self, CreatePostDataAccess};
+use crate::usecase::post_delete::DeletePostDataAccess;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
@@ -33,7 +34,7 @@ impl PostUpdateAccess {
 
 #[derive(Insertable)]
 #[table_name = "posts"]
-pub struct PostNewAccess<'a> {
+struct PostNewAccess<'a> {
     title: &'a str,
     body: &'a str,
     published: bool,
@@ -58,12 +59,6 @@ impl<'a> PostTable<'a> {
         PostTable { connection }
     }
 
-    pub fn create(&self, post: PostNewAccess) -> Result<Post, diesel::result::Error> {
-        diesel::insert_into(posts::table)
-            .values(post)
-            .get_result::<Post>(self.connection)
-    }
-
     pub fn update(
         &self,
         target_id: i32,
@@ -72,11 +67,6 @@ impl<'a> PostTable<'a> {
         let _result = diesel::update(dsl::posts.find(target_id))
             .set(&update_post)
             .get_result::<Post>(self.connection)?;
-        Ok(())
-    }
-
-    pub fn delete(&self, target_id: i32) -> Result<(), diesel::result::Error> {
-        diesel::delete(dsl::posts.find(target_id)).execute(self.connection)?;
         Ok(())
     }
 }
@@ -110,7 +100,7 @@ impl<'a> ArticleListDataAccess for PostTable<'a> {
 }
 
 impl<'a> CreatePostDataAccess for PostTable<'a> {
-    fn create(&self, input: InputData) -> Result<Post, DataAccessError> {
+    fn create(&self, input: post_create::InputData) -> Result<Post, DataAccessError> {
         let new_post = PostNewAccess::new(&input.title, &input.body, input.published);
 
         let result = diesel::insert_into(posts::table)
@@ -118,6 +108,16 @@ impl<'a> CreatePostDataAccess for PostTable<'a> {
             .get_result::<Post>(self.connection);
 
         self.parse_data_access_result(result)
+    }
+}
+
+impl<'a> DeletePostDataAccess for PostTable<'a> {
+    fn delete(&self, target_id: i32) -> Result<(), DataAccessError> {
+        let result = diesel::delete(dsl::posts.find(target_id)).execute(self.connection);
+        match result {
+            Ok(_) => Ok(()),
+            Err(_) => Err(DataAccessError::InternalError),
+        }
     }
 }
 
@@ -131,11 +131,19 @@ mod test {
         let connection = test_util::connection_init();
         let post_table = PostTable::new(&connection);
 
-        let new_post1 = PostNewAccess::new("unit test title111", "unit test body111", true);
-        let created_posts1 = post_table.create(new_post1).unwrap();
+        let new_input1 = post_create::InputData {
+            title: "unit test title111".to_string(),
+            body: "unit test body111".to_string(),
+            published: true,
+        };
+        let created_posts1 = post_table.create(new_input1).unwrap();
 
-        let new_post2 = PostNewAccess::new("unit test title222", "unit test body222", false);
-        let created_posts2 = post_table.create(new_post2).unwrap();
+        let new_input2 = post_create::InputData {
+            title: "unit test title222".to_string(),
+            body: "unit test body222".to_string(),
+            published: false,
+        };
+        let created_posts2 = post_table.create(new_input2).unwrap();
         let _published_post = post_table.update(
             created_posts2.id,
             PostUpdateAccess::new(None, None, Some(true)),

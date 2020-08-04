@@ -1,5 +1,4 @@
-use crate::driver::posts::PostTable;
-use diesel::PgConnection;
+use crate::usecase::error::DataAccessError;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -14,8 +13,13 @@ impl InputData {
     }
 }
 
-pub fn execute(connection: &PgConnection, input: InputData) -> Result<(), diesel::result::Error> {
-    let post_table = PostTable::new(&connection);
+pub trait DeletePostDataAccess {
+    fn delete(&self, target_id: i32) -> Result<(), DataAccessError>;
+}
 
+pub fn execute<T>(post_table: T, input: InputData) -> Result<(), DataAccessError>
+where
+    T: DeletePostDataAccess,
+{
     post_table.delete(input.id)
 }

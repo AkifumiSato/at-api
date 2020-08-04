@@ -111,7 +111,9 @@ impl<'a> TagFindsDataAccess for TagsTable<'a> {
 mod test {
     use super::*;
     use crate::driver::pool::test_util;
-    use crate::driver::posts::{PostNewAccess, PostTable};
+    use crate::driver::posts::PostTable;
+    use crate::usecase::post_create;
+    use crate::usecase::post_create::CreatePostDataAccess;
 
     #[test]
     fn tags_scenario() {
@@ -119,8 +121,12 @@ mod test {
         let tags_table = TagsTable::new(&connection);
         let post_table = PostTable::new(&connection);
 
-        let new_post = PostNewAccess::new("tag test title", "tag test body", true);
-        let created_posts = post_table.create(new_post).unwrap();
+        let new_input = post_create::InputData {
+            title: "unit test title222".to_string(),
+            body: "unit test body222".to_string(),
+            published: false,
+        };
+        let created_posts = post_table.create(new_input).unwrap();
 
         let new_tag = NewTag::new("test name".to_string(), "test slug".to_string());
         let created_tag = tags_table.create(new_tag).unwrap();
