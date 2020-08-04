@@ -8,25 +8,26 @@ use crate::usecase::tag_all_get::TagAllGetDataAccess;
 use crate::usecase::tag_create::{self, CreateTagDataAccess};
 use crate::usecase::tag_delete::DeleteTagDataAccess;
 use crate::usecase::tag_register_to_post::RegisterTagPostDataAccess;
+use crate::usecase::tag_update::{self, UpdateTagDataAccess};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
 #[derive(AsChangeset)]
 #[table_name = "tags"]
-pub struct TagUpdateAccess {
+struct UpdateTag {
     name: Option<String>,
     slug: Option<String>,
 }
 
-impl TagUpdateAccess {
-    pub fn new(name: Option<String>, slug: Option<String>) -> TagUpdateAccess {
-        TagUpdateAccess { name, slug }
+impl UpdateTag {
+    pub fn new(name: Option<String>, slug: Option<String>) -> UpdateTag {
+        UpdateTag { name, slug }
     }
 }
 
 #[derive(Insertable)]
 #[table_name = "tags"]
-pub struct NewTag {
+struct NewTag {
     name: String,
     slug: String,
 }
@@ -50,17 +51,6 @@ pub struct TagsTable<'a> {
 impl<'a> TagsTable<'a> {
     pub fn new(connection: &'a PgConnection) -> TagsTable<'a> {
         TagsTable { connection }
-    }
-
-    pub fn update(
-        &self,
-        target_id: i32,
-        update_tag: TagUpdateAccess,
-    ) -> Result<(), diesel::result::Error> {
-        let _result = diesel::update(tags::dsl::tags.find(target_id))
-            .set(&update_tag)
-            .get_result::<Tag>(self.connection)?;
-        Ok(())
     }
 }
 
@@ -116,6 +106,19 @@ impl<'a> RegisterTagPostDataAccess for TagsTable<'a> {
     }
 }
 
+impl<'a> UpdateTagDataAccess for TagsTable<'a> {
+    fn update(&self, input: tag_update::InputData) -> Result<(), DataAccessError> {
+        let result = diesel::update(tags::dsl::tags.find(input.id))
+            .set(UpdateTag::new(input.name, input.slug))
+            .get_result::<Tag>(self.connection);
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(_) => Err(DataAccessError::InternalError),
+        }
+    }
+}
+
 impl<'a> DeleteTagDataAccess for TagsTable<'a> {
     fn delete(&self, target_id: i32) -> Result<(), DataAccessError> {
         let result = diesel::delete(tags::dsl::tags.find(target_id)).execute(self.connection);
@@ -161,11 +164,12 @@ mod test {
         assert_eq!(tag.name, "test name");
         assert_eq!(tag.slug, "test slug");
 
-        let update_tag = TagUpdateAccess::new(
-            Some("update test name111".to_string()),
-            Some("update test slug111".to_string()),
-        );
-        let _result = tags_table.update(created_tag.id, update_tag);
+        let update_tag = tag_update::InputData {
+            id: created_tag.id,
+            name: Some("update test name111".to_string()),
+            slug: Some("update test slug111".to_string()),
+        };
+        let _result = tags_table.update(update_tag);
 
         let tag = tags_table.find_by_post_ids(vec![created_posts.id]).unwrap();
         let tag = tag.iter().next().unwrap();
