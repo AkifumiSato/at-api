@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate diesel;
 
-pub mod domain;
-pub mod driver;
-pub mod routes;
+pub mod articles;
+pub mod database_utils;
 pub mod schema;
-pub mod usecase;

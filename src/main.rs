@@ -3,8 +3,8 @@ extern crate my_app;
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use diesel::pg::PgConnection;
 use diesel::r2d2::{self, ConnectionManager};
-use my_app::driver::pool::env_database_url;
-use my_app::routes;
+use my_app::articles::routes;
+use my_app::database_utils::pool::env_database_url;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
