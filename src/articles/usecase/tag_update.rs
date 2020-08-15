@@ -1,4 +1,4 @@
-use crate::articles::usecase::error::DataAccessError;
+use crate::database_utils::error::DataAccessError;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]

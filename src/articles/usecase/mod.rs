@@ -1,6 +1,5 @@
 pub mod article_find;
 pub mod article_list_get;
-pub mod error;
 pub mod post_create;
 pub mod post_delete;
 pub mod post_update;

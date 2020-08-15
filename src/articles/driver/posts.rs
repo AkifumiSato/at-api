@@ -1,8 +1,7 @@
 use crate::articles::domain::entity::posts::Post;
-use crate::articles::driver::data_access::DataAccess;
 use crate::articles::usecase::article_find::ArticleFindDataAccess;
 use crate::articles::usecase::article_list_get::ArticleListDataAccess;
-use crate::articles::usecase::error::DataAccessError;
+use crate::database_utils::error::{DataAccess, DataAccessError};
 use crate::articles::usecase::post_create::{self, CreatePostDataAccess};
 use crate::articles::usecase::post_delete::DeletePostDataAccess;
 use crate::articles::usecase::post_update::{self, UpdateDataAccess};

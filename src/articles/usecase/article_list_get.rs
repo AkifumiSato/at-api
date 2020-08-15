@@ -1,6 +1,6 @@
 use crate::articles::domain::entity::posts::Post;
 use crate::articles::domain::entity::tags::PostTag;
-use crate::articles::usecase::error::DataAccessError;
+use crate::database_utils::error::DataAccessError;
 use chrono::naive::serde::ts_seconds::{deserialize, serialize};
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};

@@ -1,7 +1,6 @@
 use crate::articles::domain::entity::tags::{PostTag, Tag};
-use crate::articles::driver::data_access::DataAccess;
 use crate::articles::usecase::article_list_get::TagFindsDataAccess;
-use crate::articles::usecase::error::DataAccessError;
+use crate::database_utils::error::{DataAccess, DataAccessError};
 use crate::articles::usecase::tag_all_get::TagAllGetDataAccess;
 use crate::articles::usecase::tag_create::{self, CreateTagDataAccess};
 use crate::articles::usecase::tag_delete::DeleteTagDataAccess;
