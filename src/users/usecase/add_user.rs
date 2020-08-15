@@ -8,12 +8,12 @@ pub struct InputData {
 }
 
 pub trait CreateUserDataAccess {
-    fn create(&self, input: InputData) -> Result<User, DataAccessError>;
+    fn create(&self, user_id: i32) -> Result<User, DataAccessError>;
 }
 
 pub fn execute<T>(data_access: T, input: InputData) -> Result<User, DataAccessError>
 where
     T: CreateUserDataAccess,
 {
-    data_access.create(input)
+    data_access.create(input.id)
 }

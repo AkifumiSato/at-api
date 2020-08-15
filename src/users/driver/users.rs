@@ -1,10 +1,10 @@
-use super::super::usecase::add_user;
-use crate::schema::users;
+use crate::schema::users::{self, dsl};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use crate::database_utils::error::{DataAccess, DataAccessError};
 use crate::users::domain::entity::user::User;
 use crate::users::usecase::add_user::CreateUserDataAccess;
+use crate::users::usecase::delete_user::DeleteUserDataAccess;
 
 #[derive(Insertable)]
 #[table_name = "users"]
@@ -33,14 +33,25 @@ impl<'a> UserTable<'a> {
 impl<'a> DataAccess for UserTable<'a> {}
 
 impl<'a> CreateUserDataAccess for UserTable<'a> {
-    fn create(&self, input: add_user::InputData) -> Result<User, DataAccessError> {
-        let new_user = NewUser::new(input.id);
+    fn create(&self, user_id: i32) -> Result<User, DataAccessError> {
+        let new_user = NewUser::new(user_id);
 
         let result = diesel::insert_into(users::table)
             .values(new_user)
             .get_result::<User>(self.connection);
 
         self.parse_data_access_result(result)
+    }
+}
+
+impl<'a> DeleteUserDataAccess for UserTable<'a> {
+    fn delete(&self, user_id: i32) -> Result<(), DataAccessError> {
+        let result = diesel::delete(dsl::users.find(user_id)).execute(self.connection);
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(_) => Err(DataAccessError::InternalError),
+        }
     }
 }
 
@@ -54,11 +65,11 @@ mod test {
         let connection = test_util::connection_init();
         let user_table = UserTable::new(&connection);
 
-        let new_input1 = add_user::InputData {
-            id: 9999,
-        };
-        let created_posts1 = user_table.create(new_input1).unwrap();
+        let created_posts1 = user_table.create(9999).unwrap();
 
         assert_eq!(created_posts1.id, 9999);
+
+        let delete = user_table.delete(9999);
+        assert!(delete.is_ok())
     }
 }
