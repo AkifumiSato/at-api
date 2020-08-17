@@ -3,10 +3,8 @@ extern crate my_app;
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use diesel::pg::PgConnection;
 use diesel::r2d2::{self, ConnectionManager};
-use my_app::users::routes as users_route;
-use my_app::articles::routes as articles_route;
-use my_app::action_logs::routes as action_logs_route;
 use my_app::database_utils::pool::env_database_url;
+use my_app::routes;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -28,10 +26,10 @@ async fn main() -> std::io::Result<()> {
             .data(pool.clone())
             .wrap(Logger::default())
             .data(web::JsonConfig::default().limit(4096))
-            .service(web::scope("/users").configure(users_route::config))
-            .service(web::scope("/posts").configure(articles_route::posts::config))
-            .service(web::scope("/tags").configure(articles_route::tags::config))
-            .service(web::scope("/action_logs").configure(action_logs_route::config))
+            .service(web::scope("/users").configure(routes::users::config))
+            .service(web::scope("/posts").configure(routes::posts::config))
+            .service(web::scope("/tags").configure(routes::tags::config))
+            .service(web::scope("/action_logs").configure(routes::action_logs::config))
     })
     .bind(&bind)?
     .run()
