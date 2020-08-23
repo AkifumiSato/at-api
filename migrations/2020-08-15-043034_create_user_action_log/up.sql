@@ -1,5 +1,5 @@
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY
+    id INTEGER PRIMARY KEY
 );
 
 CREATE TABLE action_records (
