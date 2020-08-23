@@ -1,12 +1,12 @@
-use crate::database_utils::error::{DataAccess, DataAccessError};
+use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::posts::Post;
 use crate::schema::posts;
 use crate::schema::posts::dsl;
-use crate::usecase::articles::find::ArticleFindDataAccess;
-use crate::usecase::articles::get_list::ArticleListDataAccess;
-use crate::usecase::articles::post_create::{self, CreatePostDataAccess};
-use crate::usecase::articles::post_delete::DeletePostDataAccess;
-use crate::usecase::articles::post_update::{self, UpdateDataAccess};
+use crate::usecase::articles::find::ArticleFindUseCase;
+use crate::usecase::articles::get_list::ArticleListUseCase;
+use crate::usecase::articles::post_create::{self, CreatePostUseCase};
+use crate::usecase::articles::post_delete::DeletePostUseCase;
+use crate::usecase::articles::post_update::{self, UpdateUseCase};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
@@ -60,9 +60,9 @@ impl<'a> PostTable<'a> {
     }
 }
 
-impl<'a> DataAccess for PostTable<'a> {}
+impl<'a> UseCase for PostTable<'a> {}
 
-impl<'a> ArticleFindDataAccess for PostTable<'a> {
+impl<'a> ArticleFindUseCase for PostTable<'a> {
     fn find(&self, id: i32) -> Result<Option<Post>, DataAccessError> {
         let result = dsl::posts
             .find(id)
@@ -73,7 +73,7 @@ impl<'a> ArticleFindDataAccess for PostTable<'a> {
     }
 }
 
-impl<'a> ArticleListDataAccess for PostTable<'a> {
+impl<'a> ArticleListUseCase for PostTable<'a> {
     fn show(&self, count: i32, page: i32) -> Result<Vec<Post>, DataAccessError> {
         let offset = count * (page - 1);
 
@@ -88,7 +88,7 @@ impl<'a> ArticleListDataAccess for PostTable<'a> {
     }
 }
 
-impl<'a> CreatePostDataAccess for PostTable<'a> {
+impl<'a> CreatePostUseCase for PostTable<'a> {
     fn create(&self, input: post_create::InputData) -> Result<Post, DataAccessError> {
         let new_post = PostNewAccess::new(&input.title, &input.body, input.published);
 
@@ -100,7 +100,7 @@ impl<'a> CreatePostDataAccess for PostTable<'a> {
     }
 }
 
-impl<'a> DeletePostDataAccess for PostTable<'a> {
+impl<'a> DeletePostUseCase for PostTable<'a> {
     fn delete(&self, target_id: i32) -> Result<(), DataAccessError> {
         let result = diesel::delete(dsl::posts.find(target_id)).execute(self.connection);
 
@@ -111,7 +111,7 @@ impl<'a> DeletePostDataAccess for PostTable<'a> {
     }
 }
 
-impl<'a> UpdateDataAccess for PostTable<'a> {
+impl<'a> UpdateUseCase for PostTable<'a> {
     fn update(&self, input: post_update::InputData) -> Result<(), DataAccessError> {
         let result = diesel::update(dsl::posts.find(input.id))
             .set(PostUpdateAccess::new(

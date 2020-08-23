@@ -1,8 +1,8 @@
-use crate::database_utils::error::{DataAccess, DataAccessError};
+use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::user::User;
 use crate::schema::users::{self, dsl};
-use crate::usecase::users::add::CreateUserDataAccess;
-use crate::usecase::users::delete::DeleteUserDataAccess;
+use crate::usecase::users::add::CreateUserUseCase;
+use crate::usecase::users::delete::DeleteUserUseCase;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
@@ -28,9 +28,9 @@ impl<'a> UserTable<'a> {
     }
 }
 
-impl<'a> DataAccess for UserTable<'a> {}
+impl<'a> UseCase for UserTable<'a> {}
 
-impl<'a> CreateUserDataAccess for UserTable<'a> {
+impl<'a> CreateUserUseCase for UserTable<'a> {
     fn create(&self, user_id: i32) -> Result<User, DataAccessError> {
         let new_user = NewUser::new(user_id);
 
@@ -42,7 +42,7 @@ impl<'a> CreateUserDataAccess for UserTable<'a> {
     }
 }
 
-impl<'a> DeleteUserDataAccess for UserTable<'a> {
+impl<'a> DeleteUserUseCase for UserTable<'a> {
     fn delete(&self, user_id: i32) -> Result<(), DataAccessError> {
         let result = diesel::delete(dsl::users.find(user_id)).execute(self.connection);
 

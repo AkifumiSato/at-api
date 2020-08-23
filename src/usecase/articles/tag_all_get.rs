@@ -7,13 +7,13 @@ pub struct OutputData {
     pub result: Vec<Tag>,
 }
 
-pub trait TagAllGetDataAccess {
+pub trait TagAllGetUseCase {
     fn all_tags(&self) -> Result<Vec<Tag>, DataAccessError>;
 }
 
 pub fn execute<T>(data_access: T) -> Result<OutputData, DataAccessError>
 where
-    T: TagAllGetDataAccess,
+    T: TagAllGetUseCase,
 {
     let result = data_access.all_tags()?;
     Ok(OutputData { result })

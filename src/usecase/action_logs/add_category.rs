@@ -8,13 +8,13 @@ pub struct InputData {
     pub name: String,
 }
 
-pub trait CreateLogCategoryDataAccess {
+pub trait CreateLogCategoryUseCase {
     fn create(&self, user_id: i32, name: String) -> Result<ActionCategory, DataAccessError>;
 }
 
 pub fn execute<T>(data_access: T, input: InputData) -> Result<ActionCategory, DataAccessError>
 where
-    T: CreateLogCategoryDataAccess,
+    T: CreateLogCategoryUseCase,
 {
     data_access.create(input.user_id, input.name)
 }

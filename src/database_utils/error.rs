@@ -14,7 +14,7 @@ impl fmt::Display for DataAccessError {
     }
 }
 
-pub trait DataAccess {
+pub trait UseCase {
     fn parse_data_access_result<T>(
         &self,
         result: Result<T, diesel::result::Error>,

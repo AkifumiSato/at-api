@@ -1,8 +1,8 @@
 use crate::database_utils::pool::DbPool;
+use crate::driver::action_log::ActionLogDriver;
 use crate::usecase::action_logs::add_category::{self, InputData};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
-use crate::driver::action_log::ActionLogDriver;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetParams {

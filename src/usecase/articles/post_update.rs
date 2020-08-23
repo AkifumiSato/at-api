@@ -26,13 +26,13 @@ impl InputData {
     }
 }
 
-pub trait UpdateDataAccess {
+pub trait UpdateUseCase {
     fn update(&self, input: InputData) -> Result<(), DataAccessError>;
 }
 
 pub fn execute<T>(data_access: T, input: InputData) -> Result<(), DataAccessError>
 where
-    T: UpdateDataAccess,
+    T: UpdateUseCase,
 {
     data_access.update(input)
 }

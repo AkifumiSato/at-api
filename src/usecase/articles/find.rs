@@ -12,13 +12,13 @@ pub struct OutputData {
     pub result: Option<Post>,
 }
 
-pub trait ArticleFindDataAccess {
+pub trait ArticleFindUseCase {
     fn find(&self, id: i32) -> Result<Option<Post>, DataAccessError>;
 }
 
 pub fn execute<T>(data_access: T, input: InputData) -> Result<OutputData, DataAccessError>
 where
-    T: ArticleFindDataAccess,
+    T: ArticleFindUseCase,
 {
     let result = data_access.find(input.id)?;
     Ok(OutputData { result })

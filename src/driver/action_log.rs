@@ -1,7 +1,7 @@
-use crate::database_utils::error::{DataAccess, DataAccessError};
+use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::action_log::ActionCategory;
 use crate::schema::action_categories;
-use crate::usecase::action_logs::add_category::CreateLogCategoryDataAccess;
+use crate::usecase::action_logs::add_category::CreateLogCategoryUseCase;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
@@ -14,10 +14,7 @@ struct NewCategory<'a> {
 
 impl<'a> NewCategory<'a> {
     pub fn new(user_id: i32, name: &'a str) -> NewCategory<'a> {
-        NewCategory {
-            user_id,
-            name,
-        }
+        NewCategory { user_id, name }
     }
 }
 
@@ -31,9 +28,9 @@ impl<'a> ActionLogDriver<'a> {
     }
 }
 
-impl<'a> DataAccess for ActionLogDriver<'a> {}
+impl<'a> UseCase for ActionLogDriver<'a> {}
 
-impl<'a> CreateLogCategoryDataAccess for ActionLogDriver<'a> {
+impl<'a> CreateLogCategoryUseCase for ActionLogDriver<'a> {
     fn create(&self, user_id: i32, name: String) -> Result<ActionCategory, DataAccessError> {
         let result = diesel::insert_into(action_categories::table)
             .values(NewCategory::new(user_id, &name))

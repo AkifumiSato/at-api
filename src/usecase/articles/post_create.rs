@@ -9,13 +9,13 @@ pub struct InputData {
     pub published: bool,
 }
 
-pub trait CreatePostDataAccess {
+pub trait CreatePostUseCase {
     fn create(&self, input: InputData) -> Result<Post, DataAccessError>;
 }
 
 pub fn execute<T>(data_access: T, input: InputData) -> Result<Post, DataAccessError>
 where
-    T: CreatePostDataAccess,
+    T: CreatePostUseCase,
 {
     data_access.create(input)
 }

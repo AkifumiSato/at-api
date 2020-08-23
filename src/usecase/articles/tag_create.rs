@@ -8,13 +8,13 @@ pub struct InputData {
     pub slug: String,
 }
 
-pub trait CreateTagDataAccess {
+pub trait CreateTagUseCase {
     fn create(&self, input: InputData) -> Result<Tag, DataAccessError>;
 }
 
 pub fn execute<T>(data_access: T, input: InputData) -> Result<Tag, DataAccessError>
 where
-    T: CreateTagDataAccess,
+    T: CreateTagUseCase,
 {
     data_access.create(input)
 }

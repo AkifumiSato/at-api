@@ -1,4 +1,4 @@
+pub mod action_log;
 pub mod posts;
 pub mod tags;
 pub mod users;
-pub mod action_log;

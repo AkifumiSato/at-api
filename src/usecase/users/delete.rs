@@ -6,13 +6,13 @@ pub struct InputData {
     pub id: i32,
 }
 
-pub trait DeleteUserDataAccess {
+pub trait DeleteUserUseCase {
     fn delete(&self, user_id: i32) -> Result<(), DataAccessError>;
 }
 
 pub fn execute<T>(data_access: T, input: InputData) -> Result<(), DataAccessError>
 where
-    T: DeleteUserDataAccess,
+    T: DeleteUserUseCase,
 {
     data_access.delete(input.id)
 }

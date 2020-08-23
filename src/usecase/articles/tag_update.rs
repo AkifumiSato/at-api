@@ -8,13 +8,13 @@ pub struct InputData {
     pub slug: Option<String>,
 }
 
-pub trait UpdateTagDataAccess {
+pub trait UpdateTagUseCase {
     fn update(&self, input: InputData) -> Result<(), DataAccessError>;
 }
 
 pub fn execute<T>(data_access: T, input: InputData) -> Result<(), DataAccessError>
 where
-    T: UpdateTagDataAccess,
+    T: UpdateTagUseCase,
 {
     data_access.update(input)
 }

@@ -165,7 +165,8 @@ mod tests {
         let req = test::TestRequest::get()
             .uri(&format!("/{}/", id))
             .to_request();
-        let resp: usecase::articles::find::OutputData = test::read_response_json(&mut app, req).await;
+        let resp: usecase::articles::find::OutputData =
+            test::read_response_json(&mut app, req).await;
         let post = resp.result.unwrap();
         assert_eq!("unit test title", post.title);
         assert_eq!("unit test body", post.body);
@@ -180,7 +181,8 @@ mod tests {
         let req = test::TestRequest::get()
             .uri(&format!("/{}/", id))
             .to_request();
-        let resp: usecase::articles::find::OutputData = test::read_response_json(&mut app, req).await;
+        let resp: usecase::articles::find::OutputData =
+            test::read_response_json(&mut app, req).await;
         let post = resp.result;
         assert!(post.is_none());
     }

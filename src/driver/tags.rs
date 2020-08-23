@@ -1,13 +1,13 @@
-use crate::database_utils::error::{DataAccess, DataAccessError};
+use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::tags::{PostTag, Tag};
 use crate::schema::posts_tags;
 use crate::schema::tags;
-use crate::usecase::articles::get_list::TagFindsDataAccess;
-use crate::usecase::articles::tag_all_get::TagAllGetDataAccess;
-use crate::usecase::articles::tag_create::{self, CreateTagDataAccess};
-use crate::usecase::articles::tag_delete::DeleteTagDataAccess;
-use crate::usecase::articles::tag_register_to_post::RegisterTagPostDataAccess;
-use crate::usecase::articles::tag_update::{self, UpdateTagDataAccess};
+use crate::usecase::articles::get_list::TagFindsUseCase;
+use crate::usecase::articles::tag_all_get::TagAllGetUseCase;
+use crate::usecase::articles::tag_create::{self, CreateTagUseCase};
+use crate::usecase::articles::tag_delete::DeleteTagUseCase;
+use crate::usecase::articles::tag_register_to_post::RegisterTagPostUseCase;
+use crate::usecase::articles::tag_update::{self, UpdateTagUseCase};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
@@ -53,9 +53,9 @@ impl<'a> TagsTable<'a> {
     }
 }
 
-impl<'a> DataAccess for TagsTable<'a> {}
+impl<'a> UseCase for TagsTable<'a> {}
 
-impl<'a> TagFindsDataAccess for TagsTable<'a> {
+impl<'a> TagFindsUseCase for TagsTable<'a> {
     fn find_by_post_ids(&self, post_ids: Vec<i32>) -> Result<Vec<PostTag>, DataAccessError> {
         let result = posts_tags::dsl::posts_tags
             .filter(posts_tags::dsl::post_id.eq_any(post_ids))
@@ -72,7 +72,7 @@ impl<'a> TagFindsDataAccess for TagsTable<'a> {
     }
 }
 
-impl<'a> TagAllGetDataAccess for TagsTable<'a> {
+impl<'a> TagAllGetUseCase for TagsTable<'a> {
     fn all_tags(&self) -> Result<Vec<Tag>, DataAccessError> {
         let result = tags::dsl::tags
             .distinct_on(tags::id)
@@ -82,7 +82,7 @@ impl<'a> TagAllGetDataAccess for TagsTable<'a> {
     }
 }
 
-impl<'a> CreateTagDataAccess for TagsTable<'a> {
+impl<'a> CreateTagUseCase for TagsTable<'a> {
     fn create(&self, input: tag_create::InputData) -> Result<Tag, DataAccessError> {
         let result = diesel::insert_into(tags::table)
             .values(NewTag::new(input.name, input.slug))
@@ -92,7 +92,7 @@ impl<'a> CreateTagDataAccess for TagsTable<'a> {
     }
 }
 
-impl<'a> RegisterTagPostDataAccess for TagsTable<'a> {
+impl<'a> RegisterTagPostUseCase for TagsTable<'a> {
     fn register_tag_post(&self, post_id: i32, tag_id: i32) -> Result<(), DataAccessError> {
         let result = diesel::insert_into(posts_tags::table)
             .values(PostsTag { post_id, tag_id })
@@ -105,7 +105,7 @@ impl<'a> RegisterTagPostDataAccess for TagsTable<'a> {
     }
 }
 
-impl<'a> UpdateTagDataAccess for TagsTable<'a> {
+impl<'a> UpdateTagUseCase for TagsTable<'a> {
     fn update(&self, input: tag_update::InputData) -> Result<(), DataAccessError> {
         let result = diesel::update(tags::dsl::tags.find(input.id))
             .set(UpdateTag::new(input.name, input.slug))
@@ -118,7 +118,7 @@ impl<'a> UpdateTagDataAccess for TagsTable<'a> {
     }
 }
 
-impl<'a> DeleteTagDataAccess for TagsTable<'a> {
+impl<'a> DeleteTagUseCase for TagsTable<'a> {
     fn delete(&self, target_id: i32) -> Result<(), DataAccessError> {
         let result = diesel::delete(tags::dsl::tags.find(target_id)).execute(self.connection);
 
@@ -135,7 +135,7 @@ mod test {
     use crate::database_utils::pool::test_util;
     use crate::driver::posts::PostTable;
     use crate::usecase::articles::post_create;
-    use crate::usecase::articles::post_create::CreatePostDataAccess;
+    use crate::usecase::articles::post_create::CreatePostUseCase;
 
     #[test]
     fn tags_scenario() {

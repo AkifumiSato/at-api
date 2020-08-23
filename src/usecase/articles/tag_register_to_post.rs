@@ -7,13 +7,13 @@ pub struct InputData {
     pub tag_id: i32,
 }
 
-pub trait RegisterTagPostDataAccess {
+pub trait RegisterTagPostUseCase {
     fn register_tag_post(&self, post_id: i32, tag_id: i32) -> Result<(), DataAccessError>;
 }
 
 pub fn execute<T>(data_access: T, input: InputData) -> Result<(), DataAccessError>
 where
-    T: RegisterTagPostDataAccess,
+    T: RegisterTagPostUseCase,
 {
     data_access.register_tag_post(input.post_id, input.tag_id)
 }

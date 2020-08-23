@@ -62,11 +62,11 @@ pub struct OutputData {
     pub result: Vec<PostItemOutput>,
 }
 
-pub trait ArticleListDataAccess {
+pub trait ArticleListUseCase {
     fn show(&self, count: i32, page: i32) -> Result<Vec<Post>, DataAccessError>;
 }
 
-pub trait TagFindsDataAccess {
+pub trait TagFindsUseCase {
     fn find_by_post_ids(&self, post_ids: Vec<i32>) -> Result<Vec<PostTag>, DataAccessError>;
 }
 
@@ -76,8 +76,8 @@ pub fn execute<T, U>(
     input: InputData,
 ) -> Result<OutputData, DataAccessError>
 where
-    T: ArticleListDataAccess,
-    U: TagFindsDataAccess,
+    T: ArticleListUseCase,
+    U: TagFindsUseCase,
 {
     let posts = article_data_access.show(input.count, input.page)?;
     let post_ids = posts.iter().map(|post| post.id).collect::<Vec<i32>>();
