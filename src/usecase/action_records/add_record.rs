@@ -8,7 +8,7 @@ pub struct InputData {
     pub start_time: i64,
     pub end_time: i64,
     pub info: Option<String>,
-    pub categories: Vec<i32>,
+    pub category_id: Option<i32>,
 }
 
 pub trait AddRecordUseCase {

@@ -52,6 +52,7 @@ struct NewRecord {
     start_time: NaiveDateTime,
     end_time: NaiveDateTime,
     info: Option<String>,
+    category_id: Option<i32>,
 }
 
 #[derive(Debug, Queryable, Serialize, Deserialize)]
@@ -65,6 +66,7 @@ struct RecordItem {
     #[serde(deserialize_with = "deserialize")]
     end_time: NaiveDateTime,
     info: Option<String>,
+    category_id: Option<i32>,
 }
 
 impl<'a> add_record::AddRecordUseCase for ActionRecordDriver<'a> {
@@ -74,12 +76,22 @@ impl<'a> add_record::AddRecordUseCase for ActionRecordDriver<'a> {
             start_time: NaiveDateTime::from_timestamp(input.start_time, 0),
             end_time: NaiveDateTime::from_timestamp(input.end_time, 0),
             info: input.info,
+            category_id: input.category_id,
         };
 
         let record_result = diesel::insert_into(action_records::table)
             .values(new_record)
             .get_result::<RecordItem>(self.connection)
             .or_else(|_| Err(DataAccessError::InternalError))?;
+
+        let category = match input.category_id {
+            Some(id) => action_categories::dsl::action_categories
+                .find(id)
+                .first::<ActionCategory>(self.connection)
+                .optional()
+                .or_else(|_| Err(DataAccessError::InternalError))?,
+            None => None,
+        };
 
         Ok(ActionRecord {
             id: record_result.id,
@@ -88,7 +100,7 @@ impl<'a> add_record::AddRecordUseCase for ActionRecordDriver<'a> {
             end_time: record_result.end_time,
             info: record_result.info,
             // todo categoriesの登録実装、Entity全体の見直し
-            categories: vec![],
+            category,
         })
     }
 }

@@ -10,7 +10,7 @@ pub struct GetParams {
     pub start_time: i64,
     pub end_time: i64,
     pub info: Option<String>,
-    pub categories: Vec<i32>,
+    pub category_id: Option<i32>,
 }
 
 impl GetParams {
@@ -20,7 +20,7 @@ impl GetParams {
             start_time: self.start_time,
             end_time: self.end_time,
             info: self.info.clone(),
-            categories: vec![],
+            category_id: self.category_id,
         }
     }
 }

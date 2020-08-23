@@ -13,13 +13,7 @@ table! {
         start_time -> Timestamp,
         end_time -> Timestamp,
         info -> Nullable<Varchar>,
-    }
-}
-
-table! {
-    action_records_categories (record_id, category_id) {
-        record_id -> Int4,
-        category_id -> Int4,
+        category_id -> Nullable<Int4>,
     }
 }
 
@@ -56,16 +50,14 @@ table! {
 }
 
 joinable!(action_categories -> users (user_id));
+joinable!(action_records -> action_categories (category_id));
 joinable!(action_records -> users (user_id));
-joinable!(action_records_categories -> action_categories (category_id));
-joinable!(action_records_categories -> action_records (record_id));
 joinable!(posts_tags -> posts (post_id));
 joinable!(posts_tags -> tags (tag_id));
 
 allow_tables_to_appear_in_same_query!(
     action_categories,
     action_records,
-    action_records_categories,
     posts,
     posts_tags,
     tags,
