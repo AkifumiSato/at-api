@@ -6,22 +6,15 @@ use crate::usecase::action_records::add_category::AddRecordCategoryUseCase;
 use crate::usecase::action_records::add_record;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
+use chrono::naive::serde::ts_seconds::{deserialize, serialize};
 use chrono::NaiveDateTime;
+use serde::{Deserialize, Serialize};
 
 #[derive(Insertable)]
 #[table_name = "action_categories"]
 struct NewCategory<'a> {
     user_id: i32,
     name: &'a str,
-}
-
-#[derive(Insertable)]
-#[table_name = "action_records"]
-struct NewRecord {
-    user_id: i32,
-    start_time: NaiveDateTime,
-    end_time: NaiveDateTime,
-    info: Option<String>,
 }
 
 impl<'a> NewCategory<'a> {
@@ -52,6 +45,28 @@ impl<'a> AddRecordCategoryUseCase for ActionRecordDriver<'a> {
     }
 }
 
+#[derive(Insertable)]
+#[table_name = "action_records"]
+struct NewRecord {
+    user_id: i32,
+    start_time: NaiveDateTime,
+    end_time: NaiveDateTime,
+    info: Option<String>,
+}
+
+#[derive(Debug, Queryable, Serialize, Deserialize)]
+struct RecordItem {
+    id: i32,
+    user_id: i32,
+    #[serde(serialize_with = "serialize")]
+    #[serde(deserialize_with = "deserialize")]
+    start_time: NaiveDateTime,
+    #[serde(serialize_with = "serialize")]
+    #[serde(deserialize_with = "deserialize")]
+    end_time: NaiveDateTime,
+    info: Option<String>,
+}
+
 impl<'a> add_record::AddRecordUseCase for ActionRecordDriver<'a> {
     fn add_record(&self, input: add_record::InputData) -> Result<ActionRecord, DataAccessError> {
         let new_record = NewRecord {
@@ -61,12 +76,19 @@ impl<'a> add_record::AddRecordUseCase for ActionRecordDriver<'a> {
             info: input.info,
         };
 
-        let result = diesel::insert_into(action_records::table)
+        let record_result = diesel::insert_into(action_records::table)
             .values(new_record)
-            .get_result::<ActionRecord>(self.connection);
+            .get_result::<RecordItem>(self.connection)
+            .or_else(|_| Err(DataAccessError::InternalError))?;
 
-        // todo categoriesの登録実装、Entity全体の見直し
-
-        self.parse_data_access_result(result)
+        Ok(ActionRecord {
+            id: record_result.id,
+            user_id: record_result.user_id,
+            start_time: record_result.start_time,
+            end_time: record_result.end_time,
+            info: record_result.info,
+            // todo categoriesの登録実装、Entity全体の見直し
+            categories: vec![],
+        })
     }
 }

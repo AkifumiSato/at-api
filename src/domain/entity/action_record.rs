@@ -2,7 +2,7 @@ use chrono::naive::serde::ts_seconds::{deserialize, serialize};
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Queryable, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ActionRecord {
     pub id: i32,
     pub user_id: i32,
@@ -13,6 +13,7 @@ pub struct ActionRecord {
     #[serde(deserialize_with = "deserialize")]
     pub end_time: NaiveDateTime,
     pub info: Option<String>,
+    pub categories: Vec<ActionCategory>,
 }
 
 #[derive(Debug, Queryable, Serialize, Deserialize)]
