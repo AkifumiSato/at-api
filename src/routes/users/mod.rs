@@ -56,7 +56,7 @@ mod tests {
 
         let req = test::TestRequest::delete()
             .uri("/")
-            .set_json(&usecase::delete_user::InputData {
+            .set_json(&usecase::users::delete::InputData {
                 id: test_id,
             })
             .to_request();

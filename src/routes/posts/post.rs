@@ -1,6 +1,6 @@
 use crate::database_utils::pool::DbPool;
 use crate::driver::posts::PostTable;
-use crate::usecase::post_create::{self, InputData};
+use crate::usecase::articles::post_create::{self, InputData};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 

@@ -1,8 +1,8 @@
 use crate::database_utils::error::{DataAccess, DataAccessError};
 use crate::domain::entity::user::User;
 use crate::schema::users::{self, dsl};
-use crate::usecase::add_user::CreateUserDataAccess;
-use crate::usecase::delete_user::DeleteUserDataAccess;
+use crate::usecase::users::add::CreateUserDataAccess;
+use crate::usecase::users::delete::DeleteUserDataAccess;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 

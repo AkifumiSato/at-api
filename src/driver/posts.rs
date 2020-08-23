@@ -2,11 +2,11 @@ use crate::database_utils::error::{DataAccess, DataAccessError};
 use crate::domain::entity::posts::Post;
 use crate::schema::posts;
 use crate::schema::posts::dsl;
-use crate::usecase::article_find::ArticleFindDataAccess;
-use crate::usecase::article_list_get::ArticleListDataAccess;
-use crate::usecase::post_create::{self, CreatePostDataAccess};
-use crate::usecase::post_delete::DeletePostDataAccess;
-use crate::usecase::post_update::{self, UpdateDataAccess};
+use crate::usecase::articles::find::ArticleFindDataAccess;
+use crate::usecase::articles::get_list::ArticleListDataAccess;
+use crate::usecase::articles::post_create::{self, CreatePostDataAccess};
+use crate::usecase::articles::post_delete::DeletePostDataAccess;
+use crate::usecase::articles::post_update::{self, UpdateDataAccess};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 

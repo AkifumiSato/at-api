@@ -1,7 +1,7 @@
 use crate::database_utils::pool::DbPool;
 use crate::driver::tags::TagsTable;
-use crate::usecase::tag_create;
-use crate::usecase::tag_register_to_post;
+use crate::usecase::articles::tag_create;
+use crate::usecase::articles::tag_register_to_post;
 use actix_web::{web, HttpResponse};
 
 pub async fn create(

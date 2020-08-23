@@ -1,6 +1,6 @@
 use crate::database_utils::pool::DbPool;
 use crate::driver::users::UserTable;
-use crate::usecase::add_user::{self, InputData};
+use crate::usecase::users::add::{self as add_user, InputData};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 

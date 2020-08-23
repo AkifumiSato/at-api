@@ -2,12 +2,12 @@ use crate::database_utils::error::{DataAccess, DataAccessError};
 use crate::domain::entity::tags::{PostTag, Tag};
 use crate::schema::posts_tags;
 use crate::schema::tags;
-use crate::usecase::article_list_get::TagFindsDataAccess;
-use crate::usecase::tag_all_get::TagAllGetDataAccess;
-use crate::usecase::tag_create::{self, CreateTagDataAccess};
-use crate::usecase::tag_delete::DeleteTagDataAccess;
-use crate::usecase::tag_register_to_post::RegisterTagPostDataAccess;
-use crate::usecase::tag_update::{self, UpdateTagDataAccess};
+use crate::usecase::articles::get_list::TagFindsDataAccess;
+use crate::usecase::articles::tag_all_get::TagAllGetDataAccess;
+use crate::usecase::articles::tag_create::{self, CreateTagDataAccess};
+use crate::usecase::articles::tag_delete::DeleteTagDataAccess;
+use crate::usecase::articles::tag_register_to_post::RegisterTagPostDataAccess;
+use crate::usecase::articles::tag_update::{self, UpdateTagDataAccess};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
@@ -134,8 +134,8 @@ mod test {
     use super::*;
     use crate::database_utils::pool::test_util;
     use crate::driver::posts::PostTable;
-    use crate::usecase::post_create;
-    use crate::usecase::post_create::CreatePostDataAccess;
+    use crate::usecase::articles::post_create;
+    use crate::usecase::articles::post_create::CreatePostDataAccess;
 
     #[test]
     fn tags_scenario() {

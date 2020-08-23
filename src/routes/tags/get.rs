@@ -1,6 +1,6 @@
 use crate::database_utils::pool::DbPool;
 use crate::driver::tags::TagsTable;
-use crate::usecase::tag_all_get;
+use crate::usecase::articles::tag_all_get;
 use actix_web::{web, HttpResponse};
 
 pub async fn index(pool: web::Data<DbPool>) -> HttpResponse {

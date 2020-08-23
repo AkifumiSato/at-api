@@ -1,6 +1,6 @@
 use crate::database_utils::pool::DbPool;
 use crate::driver::posts::PostTable;
-use crate::usecase::post_update::{self, InputData};
+use crate::usecase::articles::post_update::{self, InputData};
 use actix_web::{web, HttpResponse};
 
 pub async fn index(pool: web::Data<DbPool>, item: web::Json<InputData>) -> HttpResponse {

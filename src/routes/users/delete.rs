@@ -1,6 +1,6 @@
 use crate::database_utils::pool::DbPool;
 use crate::driver::users::UserTable;
-use crate::usecase::delete_user::{self, InputData};
+use crate::usecase::users::delete::{self, InputData};
 use actix_web::{web, HttpResponse};
 
 pub async fn index(pool: web::Data<DbPool>, item: web::Json<InputData>) -> HttpResponse {
@@ -11,7 +11,7 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Json<InputData>) -> HttpR
     let input = item.into_inner();
     let id = input.id;
 
-    match delete_user::execute(user_table, input) {
+    match delete::execute(user_table, input) {
         Ok(_v) => HttpResponse::Ok().body(format!("delete post [{}]", id)),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

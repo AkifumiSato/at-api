@@ -1,6 +1,6 @@
 use crate::database_utils::pool::DbPool;
 use crate::driver::posts::PostTable;
-use crate::usecase::article_find::{self, InputData};
+use crate::usecase::articles::find::{self, InputData};
 use actix_web::{web, HttpResponse};
 
 pub async fn index(pool: web::Data<DbPool>, info: web::Path<InputData>) -> HttpResponse {
@@ -9,7 +9,7 @@ pub async fn index(pool: web::Data<DbPool>, info: web::Path<InputData>) -> HttpR
         .expect("couldn't get driver connection from pool");
     let post_table = PostTable::new(&connection);
 
-    match article_find::execute(post_table, info.into_inner()) {
+    match find::execute(post_table, info.into_inner()) {
         Ok(result) => HttpResponse::Ok().json(result),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

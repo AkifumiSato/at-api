@@ -1,7 +1,7 @@
 use crate::database_utils::pool::DbPool;
 use crate::driver::posts::PostTable;
 use crate::driver::tags::TagsTable;
-use crate::usecase::article_list_get::{self, InputData};
+use crate::usecase::articles::get_list::{self, InputData};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 
@@ -27,7 +27,7 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Query<GetParams>) -> Http
     let post_table = PostTable::new(&connection);
     let tags_table = TagsTable::new(&connection);
 
-    match article_list_get::execute(post_table, tags_table, item.into_inner().to_input_data()) {
+    match get_list::execute(post_table, tags_table, item.into_inner().to_input_data()) {
         Ok(result) => HttpResponse::Ok().json(result),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

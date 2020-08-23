@@ -1,12 +1,2 @@
-pub mod add_user;
-pub mod article_find;
-pub mod article_list_get;
-pub mod delete_user;
-pub mod post_create;
-pub mod post_delete;
-pub mod post_update;
-pub mod tag_all_get;
-pub mod tag_create;
-pub mod tag_delete;
-pub mod tag_register_to_post;
-pub mod tag_update;
+pub mod users;
+pub mod articles;

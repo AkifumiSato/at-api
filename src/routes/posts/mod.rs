@@ -65,13 +65,13 @@ mod tests {
         assert_eq!("unit test body", resp.body);
 
         let req = test::TestRequest::get().uri("/?count=1").to_request();
-        let resp: usecase::article_list_get::OutputData =
+        let resp: usecase::articles::get_list::OutputData =
             test::read_response_json(&mut app, req).await;
         assert_eq!(1, resp.result.iter().len());
         assert_eq!(id, resp.result.first().unwrap().id);
 
         let req = test::TestRequest::get().uri("/").to_request();
-        let resp: usecase::article_list_get::OutputData =
+        let resp: usecase::articles::get_list::OutputData =
             test::read_response_json(&mut app, req).await;
         assert_eq!(id, resp.result.first().unwrap().id);
     }
@@ -108,13 +108,13 @@ mod tests {
         assert_eq!("unit test body", resp.body);
 
         let req = test::TestRequest::get().uri("/?count=1").to_request();
-        let resp: usecase::article_list_get::OutputData =
+        let resp: usecase::articles::get_list::OutputData =
             test::read_response_json(&mut app, req).await;
         assert_ne!(id, resp.result.first().unwrap().id);
 
         let req = test::TestRequest::patch()
             .uri("/")
-            .set_json(&usecase::post_update::InputData::new(
+            .set_json(&usecase::articles::post_update::InputData::new(
                 id,
                 None,
                 None,
@@ -125,7 +125,7 @@ mod tests {
         assert!(resp.status().is_success());
 
         let req = test::TestRequest::get().uri("/?count=1").to_request();
-        let resp: usecase::article_list_get::OutputData =
+        let resp: usecase::articles::get_list::OutputData =
             test::read_response_json(&mut app, req).await;
         assert_eq!(1, resp.result.iter().len());
         assert_eq!(id, resp.result.first().unwrap().id);
@@ -165,14 +165,14 @@ mod tests {
         let req = test::TestRequest::get()
             .uri(&format!("/{}/", id))
             .to_request();
-        let resp: usecase::article_find::OutputData = test::read_response_json(&mut app, req).await;
+        let resp: usecase::articles::find::OutputData = test::read_response_json(&mut app, req).await;
         let post = resp.result.unwrap();
         assert_eq!("unit test title", post.title);
         assert_eq!("unit test body", post.body);
 
         let req = test::TestRequest::delete()
             .uri("/")
-            .set_json(&usecase::post_delete::InputData::new(id))
+            .set_json(&usecase::articles::post_delete::InputData::new(id))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
@@ -180,7 +180,7 @@ mod tests {
         let req = test::TestRequest::get()
             .uri(&format!("/{}/", id))
             .to_request();
-        let resp: usecase::article_find::OutputData = test::read_response_json(&mut app, req).await;
+        let resp: usecase::articles::find::OutputData = test::read_response_json(&mut app, req).await;
         let post = resp.result;
         assert!(post.is_none());
     }
