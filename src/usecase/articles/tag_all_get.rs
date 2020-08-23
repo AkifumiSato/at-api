@@ -1,8 +1,8 @@
 use crate::database_utils::error::DataAccessError;
 use crate::domain::entity::tags::Tag;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct OutputData {
     pub result: Vec<Tag>,
 }
