@@ -10,14 +10,14 @@ CREATE TABLE action_records (
     info VARCHAR(100)
 );
 
-CREATE TABLE categories (
+CREATE TABLE action_categories (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users (id),
-    name VARCHAR(20)
+    name VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE action_records_categories (
     record_id INTEGER NOT NULL REFERENCES action_records (id),
-    category_id INTEGER NOT NULL REFERENCES categories (id),
+    category_id INTEGER NOT NULL REFERENCES action_categories (id),
     PRIMARY KEY (record_id, category_id)
 );
