@@ -1,7 +1,7 @@
 use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::action_log::ActionCategory;
 use crate::schema::action_categories;
-use crate::usecase::action_logs::add_category::CreateLogCategoryUseCase;
+use crate::usecase::action_records::add_category::CreateLogCategoryUseCase;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
