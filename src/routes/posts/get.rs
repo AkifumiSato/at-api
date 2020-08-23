@@ -1,6 +1,6 @@
 use crate::database_utils::pool::DbPool;
-use crate::driver::posts::PostTable;
-use crate::driver::tags::TagsTable;
+use crate::driver::posts::PostDriver;
+use crate::driver::post_tags::PostTagDriver;
 use crate::usecase::articles::get_list::{self, InputData};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
@@ -24,8 +24,8 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Query<GetParams>) -> Http
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let post_table = PostTable::new(&connection);
-    let tags_table = TagsTable::new(&connection);
+    let post_table = PostDriver::new(&connection);
+    let tags_table = PostTagDriver::new(&connection);
 
     match get_list::execute(post_table, tags_table, item.into_inner().to_input_data()) {
         Ok(result) => HttpResponse::Ok().json(result),

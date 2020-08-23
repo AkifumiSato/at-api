@@ -1,5 +1,5 @@
 use crate::database_utils::pool::DbPool;
-use crate::driver::tags::TagsTable;
+use crate::driver::post_tags::PostTagDriver;
 use crate::usecase::articles::tag_delete::{self, InputData};
 use actix_web::{web, HttpResponse};
 
@@ -7,7 +7,7 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Json<InputData>) -> HttpR
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let tags_table = TagsTable::new(&connection);
+    let tags_table = PostTagDriver::new(&connection);
     let input = item.into_inner();
     let id = input.id;
 

@@ -3,7 +3,7 @@ use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Queryable, Serialize, Deserialize)]
-pub struct ActionLog {
+pub struct ActionRecord {
     pub id: i32,
     pub user_id: i32,
     #[serde(serialize_with = "serialize")]

@@ -1,5 +1,5 @@
 use crate::database_utils::pool::DbPool;
-use crate::driver::users::UserTable;
+use crate::driver::users::UserDriver;
 use crate::usecase::users::add::{self as add_user, InputData};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
@@ -24,7 +24,7 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Json<JsonBody>) -> HttpRe
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let user_table = UserTable::new(&connection);
+    let user_table = UserDriver::new(&connection);
 
     match add_user::execute(user_table, item.to_input_data()) {
         Ok(user) => HttpResponse::Created().json(user),

@@ -1,5 +1,5 @@
 use crate::database_utils::pool::DbPool;
-use crate::driver::posts::PostTable;
+use crate::driver::posts::PostDriver;
 use crate::usecase::articles::post_delete::{self, InputData};
 use actix_web::{web, HttpResponse};
 
@@ -7,7 +7,7 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Json<InputData>) -> HttpR
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let post_table = PostTable::new(&connection);
+    let post_table = PostDriver::new(&connection);
     let input = item.into_inner();
     let id = input.id;
 

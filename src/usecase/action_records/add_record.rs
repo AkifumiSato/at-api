@@ -1,0 +1,23 @@
+use crate::database_utils::error::DataAccessError;
+use serde::{Deserialize, Serialize};
+use crate::domain::entity::action_record::ActionRecord;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct InputData {
+    pub user_id: i32,
+    pub start: i64,
+    pub end: i64,
+    pub info: String,
+    pub categories: Vec<i32>,
+}
+
+pub trait AddRecordUseCase {
+    fn create(&self, input: InputData) -> Result<ActionRecord, DataAccessError>;
+}
+
+pub fn execute<T>(data_access: T, input: InputData) -> Result<ActionRecord, DataAccessError>
+where
+    T: AddRecordUseCase,
+{
+    data_access.create(input)
+}

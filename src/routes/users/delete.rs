@@ -1,5 +1,5 @@
 use crate::database_utils::pool::DbPool;
-use crate::driver::users::UserTable;
+use crate::driver::users::UserDriver;
 use crate::usecase::users::delete::{self, InputData};
 use actix_web::{web, HttpResponse};
 
@@ -7,7 +7,7 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Json<InputData>) -> HttpR
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let user_table = UserTable::new(&connection);
+    let user_table = UserDriver::new(&connection);
     let input = item.into_inner();
     let id = input.id;
 

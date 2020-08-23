@@ -50,19 +50,19 @@ impl PostUpdateAccess {
     }
 }
 
-pub struct PostTable<'a> {
+pub struct PostDriver<'a> {
     connection: &'a PgConnection,
 }
 
-impl<'a> PostTable<'a> {
-    pub fn new(connection: &'a PgConnection) -> PostTable<'a> {
-        PostTable { connection }
+impl<'a> PostDriver<'a> {
+    pub fn new(connection: &'a PgConnection) -> PostDriver<'a> {
+        PostDriver { connection }
     }
 }
 
-impl<'a> UseCase for PostTable<'a> {}
+impl<'a> UseCase for PostDriver<'a> {}
 
-impl<'a> ArticleFindUseCase for PostTable<'a> {
+impl<'a> ArticleFindUseCase for PostDriver<'a> {
     fn find(&self, id: i32) -> Result<Option<Post>, DataAccessError> {
         let result = dsl::posts
             .find(id)
@@ -73,7 +73,7 @@ impl<'a> ArticleFindUseCase for PostTable<'a> {
     }
 }
 
-impl<'a> ArticleListUseCase for PostTable<'a> {
+impl<'a> ArticleListUseCase for PostDriver<'a> {
     fn show(&self, count: i32, page: i32) -> Result<Vec<Post>, DataAccessError> {
         let offset = count * (page - 1);
 
@@ -88,7 +88,7 @@ impl<'a> ArticleListUseCase for PostTable<'a> {
     }
 }
 
-impl<'a> CreatePostUseCase for PostTable<'a> {
+impl<'a> CreatePostUseCase for PostDriver<'a> {
     fn create(&self, input: post_create::InputData) -> Result<Post, DataAccessError> {
         let new_post = PostNewAccess::new(&input.title, &input.body, input.published);
 
@@ -100,7 +100,7 @@ impl<'a> CreatePostUseCase for PostTable<'a> {
     }
 }
 
-impl<'a> DeletePostUseCase for PostTable<'a> {
+impl<'a> DeletePostUseCase for PostDriver<'a> {
     fn delete(&self, target_id: i32) -> Result<(), DataAccessError> {
         let result = diesel::delete(dsl::posts.find(target_id)).execute(self.connection);
 
@@ -111,7 +111,7 @@ impl<'a> DeletePostUseCase for PostTable<'a> {
     }
 }
 
-impl<'a> UpdateUseCase for PostTable<'a> {
+impl<'a> UpdateUseCase for PostDriver<'a> {
     fn update(&self, input: post_update::InputData) -> Result<(), DataAccessError> {
         let result = diesel::update(dsl::posts.find(input.id))
             .set(PostUpdateAccess::new(
@@ -136,7 +136,7 @@ mod test {
     #[test]
     fn scenario() {
         let connection = test_util::connection_init();
-        let post_table = PostTable::new(&connection);
+        let post_table = PostDriver::new(&connection);
 
         let new_input1 = post_create::InputData {
             title: "unit test title111".to_string(),

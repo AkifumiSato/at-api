@@ -1,5 +1,5 @@
 use crate::database_utils::pool::DbPool;
-use crate::driver::tags::TagsTable;
+use crate::driver::post_tags::PostTagDriver;
 use crate::usecase::articles::tag_create;
 use crate::usecase::articles::tag_register_to_post;
 use actix_web::{web, HttpResponse};
@@ -11,7 +11,7 @@ pub async fn create(
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let tags_table = TagsTable::new(&connection);
+    let tags_table = PostTagDriver::new(&connection);
 
     match tag_create::execute(tags_table, item.into_inner()) {
         Ok(post) => HttpResponse::Created().json(post),
@@ -26,7 +26,7 @@ pub async fn register(
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let tags_table = TagsTable::new(&connection);
+    let tags_table = PostTagDriver::new(&connection);
 
     match tag_register_to_post::execute(tags_table, item.into_inner()) {
         Ok(_) => HttpResponse::NoContent().finish(),

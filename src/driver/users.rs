@@ -18,19 +18,19 @@ impl NewUser {
     }
 }
 
-pub struct UserTable<'a> {
+pub struct UserDriver<'a> {
     connection: &'a PgConnection,
 }
 
-impl<'a> UserTable<'a> {
-    pub fn new(connection: &'a PgConnection) -> UserTable<'a> {
-        UserTable { connection }
+impl<'a> UserDriver<'a> {
+    pub fn new(connection: &'a PgConnection) -> UserDriver<'a> {
+        UserDriver { connection }
     }
 }
 
-impl<'a> UseCase for UserTable<'a> {}
+impl<'a> UseCase for UserDriver<'a> {}
 
-impl<'a> CreateUserUseCase for UserTable<'a> {
+impl<'a> CreateUserUseCase for UserDriver<'a> {
     fn create(&self, user_id: i32) -> Result<User, DataAccessError> {
         let new_user = NewUser::new(user_id);
 
@@ -42,7 +42,7 @@ impl<'a> CreateUserUseCase for UserTable<'a> {
     }
 }
 
-impl<'a> DeleteUserUseCase for UserTable<'a> {
+impl<'a> DeleteUserUseCase for UserDriver<'a> {
     fn delete(&self, user_id: i32) -> Result<(), DataAccessError> {
         let result = diesel::delete(dsl::users.find(user_id)).execute(self.connection);
 
@@ -61,7 +61,7 @@ mod test {
     #[test]
     fn scenario() {
         let connection = test_util::connection_init();
-        let user_table = UserTable::new(&connection);
+        let user_table = UserDriver::new(&connection);
 
         let created_posts1 = user_table.create(9999).unwrap();
 
