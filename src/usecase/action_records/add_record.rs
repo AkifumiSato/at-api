@@ -1,6 +1,6 @@
 use crate::database_utils::error::DataAccessError;
-use serde::{Deserialize, Serialize};
 use crate::domain::entity::action_record::ActionRecord;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {

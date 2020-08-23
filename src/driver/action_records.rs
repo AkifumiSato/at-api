@@ -1,13 +1,13 @@
 use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::action_record::{ActionCategory, ActionRecord};
-use crate::schema::action_records;
 use crate::schema::action_categories;
+use crate::schema::action_records;
 use crate::usecase::action_records::add_category::AddRecordCategoryUseCase;
 use crate::usecase::action_records::add_record;
-use diesel::pg::PgConnection;
-use diesel::prelude::*;
 use chrono::naive::serde::ts_seconds::{deserialize, serialize};
 use chrono::NaiveDateTime;
+use diesel::pg::PgConnection;
+use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Insertable)]

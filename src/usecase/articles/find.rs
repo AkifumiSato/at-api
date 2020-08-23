@@ -7,7 +7,7 @@ pub struct InputData {
     pub id: i32,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct OutputData {
     pub result: Option<Post>,
 }

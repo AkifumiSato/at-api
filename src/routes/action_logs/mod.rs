@@ -1,6 +1,6 @@
 mod get;
-mod post_record;
 mod post_category;
+mod post_record;
 
 use actix_web::web;
 

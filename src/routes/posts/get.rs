@@ -1,6 +1,6 @@
 use crate::database_utils::pool::DbPool;
-use crate::driver::posts::PostDriver;
 use crate::driver::post_tags::PostTagDriver;
+use crate::driver::posts::PostDriver;
 use crate::usecase::articles::get_list::{self, InputData};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
