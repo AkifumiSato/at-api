@@ -8,12 +8,11 @@ pub struct ActionRecord {
     pub user_id: i32,
     #[serde(serialize_with = "serialize")]
     #[serde(deserialize_with = "deserialize")]
-    pub start: NaiveDateTime,
+    pub start_time: NaiveDateTime,
     #[serde(serialize_with = "serialize")]
     #[serde(deserialize_with = "deserialize")]
-    pub end: NaiveDateTime,
-    pub info: String,
-    pub categories: Vec<ActionCategory>,
+    pub end_time: NaiveDateTime,
+    pub info: Option<String>,
 }
 
 #[derive(Debug, Queryable, Serialize, Deserialize)]
