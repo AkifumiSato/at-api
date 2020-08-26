@@ -9,6 +9,7 @@ use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use crate::usecase::action_records::get_records::{GetRecordsUseCase, InputData};
 
 #[derive(Insertable)]
 #[table_name = "action_categories"]
@@ -99,8 +100,58 @@ impl<'a> add_record::AddRecordUseCase for ActionRecordDriver<'a> {
             start_time: record_result.start_time,
             end_time: record_result.end_time,
             info: record_result.info,
-            // todo categoriesの登録実装、Entity全体の見直し
             category,
         })
+    }
+}
+
+impl<'a> GetRecordsUseCase for ActionRecordDriver<'a> {
+    fn get_records(&self, input: InputData) -> Result<Vec<ActionRecord>, DataAccessError> {
+        let offset = input.count * (input.page - 1);
+
+        let record_results: Vec<RecordItem> = action_records::dsl::action_records
+            .filter(action_records::dsl::user_id.eq(input.user_id))
+            .limit(input.count as i64)
+            .offset(offset as i64)
+            .order(action_records::dsl::id.desc())
+            .load::<RecordItem>(self.connection)
+            .or_else(|_| Err(DataAccessError::InternalError))?;
+
+        let category_ids: Vec<i32> = record_results
+            .iter()
+            .map(|result| result.category_id)
+            .filter(|id| id.is_some())
+            .map(|id| id.unwrap())
+            .collect();
+
+        let categories: Vec<ActionCategory> = action_categories::dsl::action_categories
+            .filter(action_categories::dsl::id.eq_any(category_ids))
+            .load::<ActionCategory>(self.connection)
+            .or_else(|_| Err(DataAccessError::InternalError))?;
+
+        let results = record_results
+            .iter()
+            .map(|result| {
+                ActionRecord {
+                    user_id: result.user_id,
+                    id: result.id,
+                    start_time: result.start_time,
+                    end_time: result.end_time,
+                    info: result.info.clone(),
+                    category: categories
+                        .iter()
+                        .filter(|category| {
+                            match result.category_id {
+                                Some(category_id) => category.id.eq(&category_id),
+                                None => false,
+                            }
+                        })
+                        .cloned()
+                        .next(),
+                }
+            })
+            .collect();
+
+        Ok(results)
     }
 }

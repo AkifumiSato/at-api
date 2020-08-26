@@ -10,4 +10,5 @@ pub struct GetParams {
 
 pub async fn index(_pool: web::Data<DbPool>, _item: web::Query<GetParams>) -> HttpResponse {
     HttpResponse::Ok().body("Hello, Action log.")
+    // todo: get_records::executeする
 }
