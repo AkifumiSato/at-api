@@ -71,14 +71,21 @@ mod test {
     use crate::database_utils::pool::test_util;
 
     #[test]
-    fn scenario() {
+    fn user_driver_scenario() {
         let connection = test_util::connection_init();
         let user_driver = UserDriver::new(&connection);
 
         let created_posts1 = user_driver.create(9999).unwrap();
         assert_eq!(created_posts1.id, 9999);
 
+        let user_is_registered = user_driver.is_registered(9999).unwrap();
+        assert!(user_is_registered.is_some());
+        assert_eq!(user_is_registered.unwrap().id, 9999);
+
         let delete = user_driver.delete(9999);
-        assert!(delete.is_ok())
+        assert!(delete.is_ok());
+
+        let user_is_registered = user_driver.is_registered(9999).unwrap();
+        assert!(user_is_registered.is_none());
     }
 }
