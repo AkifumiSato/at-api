@@ -1,4 +1,5 @@
 mod get;
+mod patch_category;
 mod post_category;
 mod post_record;
 
@@ -9,7 +10,8 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         web::scope("/")
             .route("", web::get().to(get::index))
             .route("", web::post().to(post_record::index))
-            .route("category/", web::post().to(post_category::index)),
+            .route("category/", web::post().to(post_category::index))
+            .route("category/", web::patch().to(patch_category::index)),
     );
 }
 

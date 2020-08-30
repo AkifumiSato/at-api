@@ -3,6 +3,7 @@ use crate::domain::entity::action_record::{ActionCategory, ActionRecord};
 use crate::schema::action_categories;
 use crate::schema::action_records;
 use crate::usecase::action_records::category_add::AddRecordCategoryUseCase;
+use crate::usecase::action_records::category_update::{self, UpdateRecordCategoryUseCase};
 use crate::usecase::action_records::record_add;
 use crate::usecase::action_records::records_get::{GetRecordsUseCase, InputData};
 use chrono::naive::serde::ts_seconds::{deserialize, serialize};
@@ -102,6 +103,38 @@ impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
             info: record_result.info,
             category,
         })
+    }
+}
+
+#[derive(AsChangeset)]
+#[table_name = "action_categories"]
+pub struct UpdateCategory {
+    name: Option<String>,
+}
+
+impl<'a> UpdateRecordCategoryUseCase for ActionRecordDriver<'a> {
+    fn update_category(&self, input: category_update::InputData) -> Result<(), DataAccessError> {
+        let target_category = action_categories::dsl::action_categories
+            .filter(action_categories::dsl::user_id.eq(input.user_id))
+            .select(action_categories::id)
+            .first::<i32>(self.connection)
+            .optional()
+            .or_else(|_| Err(DataAccessError::InternalError))?;
+
+        if target_category.is_none() || target_category.unwrap() != input.id {
+            return Err(DataAccessError::InternalErrorWithMessage(
+                "User has not this category!".to_string(),
+            ));
+        }
+
+        let result = diesel::update(action_categories::dsl::action_categories.find(input.id))
+            .set(UpdateCategory { name: input.name })
+            .get_result::<ActionCategory>(self.connection);
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(_) => Err(DataAccessError::InternalError),
+        }
     }
 }
 

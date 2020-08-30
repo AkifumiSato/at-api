@@ -93,7 +93,7 @@ mod test {
 #[cfg(test)]
 pub mod test_utils {
     use super::*;
-    use crate::database_utils::pool::{DbPool};
+    use crate::database_utils::pool::DbPool;
 
     pub fn test_user(pool: DbPool) -> User {
         let connection = pool

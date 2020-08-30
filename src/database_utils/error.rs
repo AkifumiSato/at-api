@@ -4,13 +4,17 @@ use std::fmt;
 #[derive(Debug)]
 pub enum DataAccessError {
     InternalError,
+    InternalErrorWithMessage(String),
 }
 
 impl StdError for DataAccessError {}
 
 impl fmt::Display for DataAccessError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "data access Error in use case!")
+        match self {
+            DataAccessError::InternalError => write!(f, "data access Error in use case!"),
+            DataAccessError::InternalErrorWithMessage(message) => write!(f, "{}", message),
+        }
     }
 }
 
