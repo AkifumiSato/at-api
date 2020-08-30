@@ -5,12 +5,12 @@ use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct GetParams {
+pub struct PostParams {
     pub user_id: i32,
     pub name: String,
 }
 
-impl GetParams {
+impl PostParams {
     pub fn to_input_data(&self) -> InputData {
         InputData {
             user_id: self.user_id,
@@ -19,7 +19,7 @@ impl GetParams {
     }
 }
 
-pub async fn index(pool: web::Data<DbPool>, item: web::Query<GetParams>) -> HttpResponse {
+pub async fn index(pool: web::Data<DbPool>, item: web::Json<PostParams>) -> HttpResponse {
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
