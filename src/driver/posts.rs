@@ -136,29 +136,29 @@ mod test {
     #[test]
     fn scenario() {
         let connection = test_util::connection_init();
-        let post_table = PostDriver::new(&connection);
+        let post_driver = PostDriver::new(&connection);
 
         let new_input1 = post_create::InputData {
             title: "unit test title111".to_string(),
             body: "unit test body111".to_string(),
             published: true,
         };
-        let created_posts1 = post_table.create(new_input1).unwrap();
+        let created_posts1 = post_driver.create(new_input1).unwrap();
 
         let new_input2 = post_create::InputData {
             title: "unit test title222".to_string(),
             body: "unit test body222".to_string(),
             published: false,
         };
-        let created_posts2 = post_table.create(new_input2).unwrap();
-        let _published_post = post_table.update(post_update::InputData::new(
+        let created_posts2 = post_driver.create(new_input2).unwrap();
+        let _published_post = post_driver.update(post_update::InputData::new(
             created_posts2.id,
             None,
             None,
             Some(true),
         ));
 
-        let posts = post_table.show(2, 1).unwrap();
+        let posts = post_driver.show(2, 1).unwrap();
 
         let result = posts
             .iter()
@@ -173,20 +173,20 @@ mod test {
             Some("update test body333"),
             None,
         );
-        let _result = post_table.update(update_post);
-        let posts = post_table.show(1, 1).unwrap();
+        let _result = post_driver.update(update_post);
+        let posts = post_driver.show(1, 1).unwrap();
 
         assert_eq!(posts.first().unwrap().title, "update test title333");
         assert_eq!(posts.first().unwrap().body, "update test body333");
 
-        let _result = post_table.delete(created_posts2.id);
-        let posts = post_table.show(1, 1).unwrap();
+        let _result = post_driver.delete(created_posts2.id);
+        let posts = post_driver.show(1, 1).unwrap();
         assert_ne!(posts.first().unwrap().title, "update test title333");
 
-        let result = post_table.find(created_posts1.id).unwrap().unwrap();
+        let result = post_driver.find(created_posts1.id).unwrap().unwrap();
         assert_eq!(result.title, "unit test title111");
 
-        let result = post_table.find(created_posts2.id).unwrap();
+        let result = post_driver.find(created_posts2.id).unwrap();
         assert!(result.is_none());
     }
 }

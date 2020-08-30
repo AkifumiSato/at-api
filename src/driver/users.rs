@@ -73,13 +73,12 @@ mod test {
     #[test]
     fn scenario() {
         let connection = test_util::connection_init();
-        let user_table = UserDriver::new(&connection);
+        let user_driver = UserDriver::new(&connection);
 
-        let created_posts1 = user_table.create(9999).unwrap();
-
+        let created_posts1 = user_driver.create(9999).unwrap();
         assert_eq!(created_posts1.id, 9999);
 
-        let delete = user_table.delete(9999);
+        let delete = user_driver.delete(9999);
         assert!(delete.is_ok())
     }
 }

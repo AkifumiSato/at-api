@@ -140,24 +140,24 @@ mod test {
     #[test]
     fn tags_scenario() {
         let connection = test_util::connection_init();
-        let tags_table = PostTagDriver::new(&connection);
-        let post_table = PostDriver::new(&connection);
+        let tags_driver = PostTagDriver::new(&connection);
+        let post_driver = PostDriver::new(&connection);
 
         let new_input = post_create::InputData {
             title: "unit test title222".to_string(),
             body: "unit test body222".to_string(),
             published: false,
         };
-        let created_posts = post_table.create(new_input).unwrap();
+        let created_posts = post_driver.create(new_input).unwrap();
 
         let new_tag = tag_create::InputData {
             name: "test name".to_string(),
             slug: "test slug".to_string(),
         };
-        let created_tag = tags_table.create(new_tag).unwrap();
-        let _register_result = tags_table.register_tag_post(created_posts.id, created_tag.id);
+        let created_tag = tags_driver.create(new_tag).unwrap();
+        let _register_result = tags_driver.register_tag_post(created_posts.id, created_tag.id);
 
-        let tag = tags_table.find_by_post_ids(vec![created_posts.id]).unwrap();
+        let tag = tags_driver.find_by_post_ids(vec![created_posts.id]).unwrap();
         let tag = tag.iter().next().unwrap();
 
         assert_eq!(tag.name, "test name");
@@ -168,15 +168,15 @@ mod test {
             name: Some("update test name111".to_string()),
             slug: Some("update test slug111".to_string()),
         };
-        let _result = tags_table.update(update_tag);
+        let _result = tags_driver.update(update_tag);
 
-        let tag = tags_table.find_by_post_ids(vec![created_posts.id]).unwrap();
+        let tag = tags_driver.find_by_post_ids(vec![created_posts.id]).unwrap();
         let tag = tag.iter().next().unwrap();
 
         assert_eq!(tag.name, "update test name111");
         assert_eq!(tag.slug, "update test slug111");
 
-        let all_tags = tags_table.all_tags().unwrap();
+        let all_tags = tags_driver.all_tags().unwrap();
         let tag = all_tags
             .iter()
             .filter(|x| x.id == created_tag.id)
@@ -185,9 +185,9 @@ mod test {
 
         assert_eq!(tag.slug, "update test slug111");
 
-        let _result = tags_table.delete(created_tag.id);
+        let _result = tags_driver.delete(created_tag.id);
 
-        let all_tags = tags_table.find_by_post_ids(vec![created_posts.id]);
+        let all_tags = tags_driver.find_by_post_ids(vec![created_posts.id]);
 
         assert!(all_tags.is_err());
     }
