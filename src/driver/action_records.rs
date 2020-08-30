@@ -4,12 +4,12 @@ use crate::schema::action_categories;
 use crate::schema::action_records;
 use crate::usecase::action_records::add_category::AddRecordCategoryUseCase;
 use crate::usecase::action_records::add_record;
+use crate::usecase::action_records::get_records::{GetRecordsUseCase, InputData};
 use chrono::naive::serde::ts_seconds::{deserialize, serialize};
 use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
-use crate::usecase::action_records::get_records::{GetRecordsUseCase, InputData};
 
 #[derive(Insertable)]
 #[table_name = "action_categories"]
@@ -131,24 +131,20 @@ impl<'a> GetRecordsUseCase for ActionRecordDriver<'a> {
 
         let results = record_results
             .iter()
-            .map(|result| {
-                ActionRecord {
-                    user_id: result.user_id,
-                    id: result.id,
-                    start_time: result.start_time,
-                    end_time: result.end_time,
-                    info: result.info.clone(),
-                    category: categories
-                        .iter()
-                        .filter(|category| {
-                            match result.category_id {
-                                Some(category_id) => category.id.eq(&category_id),
-                                None => false,
-                            }
-                        })
-                        .cloned()
-                        .next(),
-                }
+            .map(|result| ActionRecord {
+                user_id: result.user_id,
+                id: result.id,
+                start_time: result.start_time,
+                end_time: result.end_time,
+                info: result.info.clone(),
+                category: categories
+                    .iter()
+                    .filter(|category| match result.category_id {
+                        Some(category_id) => category.id.eq(&category_id),
+                        None => false,
+                    })
+                    .cloned()
+                    .next(),
             })
             .collect();
 
