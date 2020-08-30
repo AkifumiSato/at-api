@@ -20,20 +20,10 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::database_utils::pool::{env_database_url, DbPool, TestTransaction};
     use crate::domain::entity::posts::Post;
     use crate::usecase;
     use actix_web::{test, web, App};
-    use diesel::pg::PgConnection;
-    use diesel::r2d2::{self, ConnectionManager};
-
-    fn setup_connection_pool() -> DbPool {
-        let manager = ConnectionManager::<PgConnection>::new(env_database_url());
-        r2d2::Pool::builder()
-            .connection_customizer(Box::new(TestTransaction))
-            .build(manager)
-            .expect("Failed to init pool")
-    }
+    use crate::database_utils::pool::test_util::setup_connection_pool;
 
     /// # scenario
     ///

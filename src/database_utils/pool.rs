@@ -49,4 +49,12 @@ pub mod test_util {
         db.begin_test_transaction().unwrap();
         db
     }
+
+    pub fn setup_connection_pool() -> DbPool {
+        let manager = ConnectionManager::<PgConnection>::new(env_database_url());
+        r2d2::Pool::builder()
+            .connection_customizer(Box::new(TestTransaction))
+            .build(manager)
+            .expect("Failed to init pool")
+    }
 }
