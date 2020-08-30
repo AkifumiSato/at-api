@@ -42,7 +42,7 @@ mod tests {
         )
         .await;
 
-        let user = test_user();
+        let user = test_user(pool.clone());
 
         let category_name_data = "Unit test category";
         let req = test::TestRequest::post()
