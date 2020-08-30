@@ -9,16 +9,16 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         web::scope("/")
             .route("", web::get().to(get::index))
             .route("", web::post().to(post_record::index))
-            .route("category/", web::post().to(post_category::index))
+            .route("category/", web::post().to(post_category::index)),
     );
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::database_utils::pool::test_util::setup_connection_pool;
     use crate::domain::entity::action_record::ActionCategory;
     use actix_web::{test, web, App};
-    use crate::database_utils::pool::test_util::setup_connection_pool;
 
     /// # scenario
     ///
@@ -39,7 +39,7 @@ mod tests {
                 .data(web::JsonConfig::default().limit(4096))
                 .service(web::scope("").configure(config)),
         )
-            .await;
+        .await;
 
         // todo user id setup
 
@@ -48,7 +48,7 @@ mod tests {
             .uri("/category/")
             .set_json(&post_category::PostParams {
                 user_id: 777,
-                name: category_name_data.to_string()
+                name: category_name_data.to_string(),
             })
             .to_request();
         let resp: ActionCategory = test::read_response_json(&mut app, req).await;

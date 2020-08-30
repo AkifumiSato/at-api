@@ -7,11 +7,11 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Json<InputData>) -> HttpR
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let tags_table = PostTagDriver::new(&connection);
+    let tags_driver = PostTagDriver::new(&connection);
     let input = item.into_inner();
     let id = input.id;
 
-    match tag_delete::execute(tags_table, input) {
+    match tag_delete::execute(tags_driver, input) {
         Ok(_v) => HttpResponse::Ok().body(format!("delete tag. Id is [{}]", id)),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

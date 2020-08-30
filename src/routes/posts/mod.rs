@@ -20,10 +20,10 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::database_utils::pool::test_util::setup_connection_pool;
     use crate::domain::entity::posts::Post;
     use crate::usecase;
     use actix_web::{test, web, App};
-    use crate::database_utils::pool::test_util::setup_connection_pool;
 
     /// # scenario
     ///

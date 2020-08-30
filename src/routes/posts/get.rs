@@ -24,10 +24,10 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Query<GetParams>) -> Http
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let post_table = PostDriver::new(&connection);
-    let tags_table = PostTagDriver::new(&connection);
+    let post_driver = PostDriver::new(&connection);
+    let tags_driver = PostTagDriver::new(&connection);
 
-    match get_list::execute(post_table, tags_table, item.into_inner().to_input_data()) {
+    match get_list::execute(post_driver, tags_driver, item.into_inner().to_input_data()) {
         Ok(result) => HttpResponse::Ok().json(result),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

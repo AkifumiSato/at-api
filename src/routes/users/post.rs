@@ -24,10 +24,11 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Json<JsonBody>) -> HttpRe
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let user_table = UserDriver::new(&connection);
+    let user_driver = UserDriver::new(&connection);
 
-    match add_user::execute(user_table, item.to_input_data()) {
+    match add_user::execute(user_driver, item.to_input_data()) {
         Ok(user) => HttpResponse::Created().json(user),
-        Err(_e) => HttpResponse::InternalServerError().body("error occurred by duplicate id or unexpectedly"),
+        Err(_e) => HttpResponse::InternalServerError()
+            .body("error occurred by duplicate id or unexpectedly"),
     }
 }

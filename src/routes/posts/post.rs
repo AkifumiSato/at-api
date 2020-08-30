@@ -39,9 +39,9 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Json<JsonBody>) -> HttpRe
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let post_table = PostDriver::new(&connection);
+    let post_driver = PostDriver::new(&connection);
 
-    match post_create::execute(post_table, item.to_input_data()) {
+    match post_create::execute(post_driver, item.to_input_data()) {
         Ok(post) => HttpResponse::Created().json(post),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

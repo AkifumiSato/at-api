@@ -11,9 +11,9 @@ pub async fn create(
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let tags_table = PostTagDriver::new(&connection);
+    let tags_driver = PostTagDriver::new(&connection);
 
-    match tag_create::execute(tags_table, item.into_inner()) {
+    match tag_create::execute(tags_driver, item.into_inner()) {
         Ok(post) => HttpResponse::Created().json(post),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
@@ -26,9 +26,9 @@ pub async fn register(
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let tags_table = PostTagDriver::new(&connection);
+    let tags_driver = PostTagDriver::new(&connection);
 
-    match tag_register_to_post::execute(tags_table, item.into_inner()) {
+    match tag_register_to_post::execute(tags_driver, item.into_inner()) {
         Ok(_) => HttpResponse::NoContent().finish(),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

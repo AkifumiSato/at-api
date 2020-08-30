@@ -7,9 +7,9 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Json<InputData>) -> HttpR
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let tags_table = PostTagDriver::new(&connection);
+    let tags_driver = PostTagDriver::new(&connection);
 
-    match tag_update::execute(tags_table, item.into_inner()) {
+    match tag_update::execute(tags_driver, item.into_inner()) {
         Ok(_) => HttpResponse::NoContent().finish(),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

@@ -7,9 +7,9 @@ pub async fn index(pool: web::Data<DbPool>, info: web::Path<InputData>) -> HttpR
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let post_table = PostDriver::new(&connection);
+    let post_driver = PostDriver::new(&connection);
 
-    match find::execute(post_table, info.into_inner()) {
+    match find::execute(post_driver, info.into_inner()) {
         Ok(result) => HttpResponse::Ok().json(result),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

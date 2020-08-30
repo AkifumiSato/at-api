@@ -2,6 +2,7 @@ use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::user::User;
 use crate::schema::users::{self, dsl};
 use crate::usecase::users::add::CreateUserUseCase;
+use crate::usecase::users::check::CheckUserUseCase;
 use crate::usecase::users::delete::DeleteUserUseCase;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
@@ -50,6 +51,17 @@ impl<'a> DeleteUserUseCase for UserDriver<'a> {
             Ok(_) => Ok(()),
             Err(_) => Err(DataAccessError::InternalError),
         }
+    }
+}
+
+impl<'a> CheckUserUseCase for UserDriver<'a> {
+    fn is_registered(&self, user_id: i32) -> Result<Option<User>, DataAccessError> {
+        let result = dsl::users
+            .find(user_id)
+            .first::<User>(self.connection)
+            .optional();
+
+        self.parse_data_access_result(result)
     }
 }
 
