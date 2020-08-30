@@ -19,6 +19,7 @@ mod tests {
     use crate::database_utils::pool::test_util::setup_connection_pool;
     use crate::domain::entity::action_record::ActionCategory;
     use actix_web::{test, web, App};
+    use crate::driver::users::test_utils::test_user;
 
     /// # scenario
     ///
@@ -41,13 +42,13 @@ mod tests {
         )
         .await;
 
-        // todo user id setup
+        let user = test_user();
 
         let category_name_data = "Unit test category";
         let req = test::TestRequest::post()
             .uri("/category/")
             .set_json(&post_category::PostParams {
-                user_id: 777,
+                user_id: user.id,
                 name: category_name_data.to_string(),
             })
             .to_request();

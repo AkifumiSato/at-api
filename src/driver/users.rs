@@ -89,3 +89,20 @@ mod test {
         assert!(user_is_registered.is_none());
     }
 }
+
+#[cfg(test)]
+pub mod test_utils {
+    use super::*;
+    use crate::database_utils::pool::test_util;
+
+    pub fn test_user() -> User {
+        let connection = test_util::connection_init();
+        let user_driver = UserDriver::new(&connection);
+
+        let user_is_registered = user_driver.is_registered(9999).unwrap();
+        match user_is_registered {
+            Some(user) => user,
+            None => user_driver.create(9999).unwrap()
+        }
+    }
+}
