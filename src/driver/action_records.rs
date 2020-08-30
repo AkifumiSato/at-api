@@ -2,9 +2,9 @@ use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::action_record::{ActionCategory, ActionRecord};
 use crate::schema::action_categories;
 use crate::schema::action_records;
-use crate::usecase::action_records::add_category::AddRecordCategoryUseCase;
-use crate::usecase::action_records::add_record;
-use crate::usecase::action_records::get_records::{GetRecordsUseCase, InputData};
+use crate::usecase::action_records::category_add::AddRecordCategoryUseCase;
+use crate::usecase::action_records::record_add;
+use crate::usecase::action_records::records_get::{GetRecordsUseCase, InputData};
 use chrono::naive::serde::ts_seconds::{deserialize, serialize};
 use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
@@ -70,8 +70,8 @@ struct RecordItem {
     category_id: Option<i32>,
 }
 
-impl<'a> add_record::AddRecordUseCase for ActionRecordDriver<'a> {
-    fn add_record(&self, input: add_record::InputData) -> Result<ActionRecord, DataAccessError> {
+impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
+    fn add_record(&self, input: record_add::InputData) -> Result<ActionRecord, DataAccessError> {
         let new_record = NewRecord {
             user_id: input.user_id,
             start_time: NaiveDateTime::from_timestamp(input.start_time, 0),

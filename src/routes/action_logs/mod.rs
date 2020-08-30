@@ -18,8 +18,8 @@ mod tests {
     use super::*;
     use crate::database_utils::pool::test_util::setup_connection_pool;
     use crate::domain::entity::action_record::ActionCategory;
-    use actix_web::{test, web, App};
     use crate::driver::users::test_utils::test_user;
+    use actix_web::{test, web, App};
 
     /// # scenario
     ///

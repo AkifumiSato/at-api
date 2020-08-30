@@ -157,7 +157,9 @@ mod test {
         let created_tag = tags_driver.create(new_tag).unwrap();
         let _register_result = tags_driver.register_tag_post(created_posts.id, created_tag.id);
 
-        let tag = tags_driver.find_by_post_ids(vec![created_posts.id]).unwrap();
+        let tag = tags_driver
+            .find_by_post_ids(vec![created_posts.id])
+            .unwrap();
         let tag = tag.iter().next().unwrap();
 
         assert_eq!(tag.name, "test name");
@@ -170,7 +172,9 @@ mod test {
         };
         let _result = tags_driver.update(update_tag);
 
-        let tag = tags_driver.find_by_post_ids(vec![created_posts.id]).unwrap();
+        let tag = tags_driver
+            .find_by_post_ids(vec![created_posts.id])
+            .unwrap();
         let tag = tag.iter().next().unwrap();
 
         assert_eq!(tag.name, "update test name111");

@@ -102,7 +102,7 @@ pub mod test_utils {
         let user_is_registered = user_driver.is_registered(9999).unwrap();
         match user_is_registered {
             Some(user) => user,
-            None => user_driver.create(9999).unwrap()
+            None => user_driver.create(9999).unwrap(),
         }
     }
 }

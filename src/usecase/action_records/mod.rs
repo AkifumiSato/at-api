@@ -1,3 +1,3 @@
-pub mod add_category;
-pub mod add_record;
-pub mod get_records;
+pub mod category_add;
+pub mod record_add;
+pub mod records_get;

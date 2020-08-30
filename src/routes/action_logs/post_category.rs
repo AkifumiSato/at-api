@@ -1,6 +1,6 @@
 use crate::database_utils::pool::DbPool;
 use crate::driver::action_records::ActionRecordDriver;
-use crate::usecase::action_records::add_category::{self, InputData};
+use crate::usecase::action_records::category_add::{self, InputData};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 
@@ -25,7 +25,7 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Json<PostParams>) -> Http
         .expect("couldn't get driver connection from pool");
     let action_driver = ActionRecordDriver::new(&connection);
 
-    match add_category::execute(action_driver, item.to_input_data()) {
+    match category_add::execute(action_driver, item.to_input_data()) {
         Ok(category) => HttpResponse::Created().json(category),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
