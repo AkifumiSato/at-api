@@ -137,16 +137,15 @@ impl<'a> DeleteTagUseCase for PostTagDriver<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::database_utils::pool::test_util::setup_connection_pool;
     use crate::driver::posts::PostDriver;
     use crate::driver::users::test_utils::test_user_by_connection;
     use crate::usecase::articles::post_create;
     use crate::usecase::articles::post_create::CreatePostUseCase;
+    use crate::database_utils::pool::test_util;
 
     #[test]
     fn tags_scenario() {
-        let pool = setup_connection_pool();
-        let connection = pool.get().unwrap();
+        let connection = test_util::connection_init();
         let user = test_user_by_connection(&connection);
         let tags_driver = PostTagDriver::new(&connection);
         let post_driver = PostDriver::new(&connection);

@@ -149,15 +149,13 @@ impl<'a> UpdateUseCase for PostDriver<'a> {
 mod test {
     use super::*;
     use crate::database_utils::pool::test_util;
-    use crate::database_utils::pool::test_util::setup_connection_pool;
-    use crate::driver::users::test_utils::test_user_by_pool;
+    use crate::driver::users::test_utils::test_user_by_connection;
 
     #[test]
     fn scenario() {
         let connection = test_util::connection_init();
         let post_driver = PostDriver::new(&connection);
-        let pool = setup_connection_pool();
-        let user = test_user_by_pool(pool.clone());
+        let user = test_user_by_connection(&connection);
 
         let new_input1 = post_create::InputData {
             user_id: user.id,
