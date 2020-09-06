@@ -20,7 +20,7 @@ impl GetParams {
         InputData {
             user_id: self.user_id,
             page,
-            count
+            count,
         }
     }
 }

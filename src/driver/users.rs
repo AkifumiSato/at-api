@@ -95,10 +95,20 @@ pub mod test_utils {
     use super::*;
     use crate::database_utils::pool::DbPool;
 
-    pub fn test_user(pool: DbPool) -> User {
+    pub fn test_user_by_pool(pool: DbPool) -> User {
         let connection = pool
             .get()
             .expect("couldn't get driver connection from pool");
+        let user_driver = UserDriver::new(&connection);
+
+        let user_is_registered = user_driver.is_registered(9999).unwrap();
+        match user_is_registered {
+            Some(user) => user,
+            None => user_driver.create(9999).unwrap(),
+        }
+    }
+
+    pub fn test_user_by_connection(connection: &PgConnection) -> User {
         let user_driver = UserDriver::new(&connection);
 
         let user_is_registered = user_driver.is_registered(9999).unwrap();

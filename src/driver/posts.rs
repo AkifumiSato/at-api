@@ -1,8 +1,8 @@
 use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::posts::Post;
-use crate::schema::users;
 use crate::schema::posts;
 use crate::schema::posts::dsl;
+use crate::schema::users;
 use crate::usecase::articles::find::ArticleFindUseCase;
 use crate::usecase::articles::get_list::{self, ArticleListUseCase};
 use crate::usecase::articles::post_create::{self, CreatePostUseCase};
@@ -149,15 +149,15 @@ impl<'a> UpdateUseCase for PostDriver<'a> {
 mod test {
     use super::*;
     use crate::database_utils::pool::test_util;
-    use crate::driver::users::test_utils::test_user;
     use crate::database_utils::pool::test_util::setup_connection_pool;
+    use crate::driver::users::test_utils::test_user_by_pool;
 
     #[test]
     fn scenario() {
         let connection = test_util::connection_init();
         let post_driver = PostDriver::new(&connection);
         let pool = setup_connection_pool();
-        let user = test_user(pool.clone());
+        let user = test_user_by_pool(pool.clone());
 
         let new_input1 = post_create::InputData {
             user_id: user.id,
@@ -181,11 +181,13 @@ mod test {
             Some(true),
         ));
 
-        let posts = post_driver.show(get_list::InputData {
-            user_id: user.id,
-            page: 1,
-            count: 2,
-        }).unwrap();
+        let posts = post_driver
+            .show(get_list::InputData {
+                user_id: user.id,
+                page: 1,
+                count: 2,
+            })
+            .unwrap();
 
         let result = posts
             .iter()
@@ -201,21 +203,25 @@ mod test {
             None,
         );
         let _result = post_driver.update(update_post);
-        let posts = post_driver.show(get_list::InputData {
-            user_id: user.id,
-            page: 1,
-            count: 1,
-        }).unwrap();
+        let posts = post_driver
+            .show(get_list::InputData {
+                user_id: user.id,
+                page: 1,
+                count: 1,
+            })
+            .unwrap();
 
         assert_eq!(posts.first().unwrap().title, "update test title333");
         assert_eq!(posts.first().unwrap().body, "update test body333");
 
         let _result = post_driver.delete(created_posts2.id);
-        let posts = post_driver.show(get_list::InputData {
-            user_id: user.id,
-            page: 1,
-            count: 1,
-        }).unwrap();
+        let posts = post_driver
+            .show(get_list::InputData {
+                user_id: user.id,
+                page: 1,
+                count: 1,
+            })
+            .unwrap();
         assert_ne!(posts.first().unwrap().title, "update test title333");
 
         let result = post_driver.find(created_posts1.id).unwrap().unwrap();

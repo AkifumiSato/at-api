@@ -22,9 +22,9 @@ mod tests {
     use super::*;
     use crate::database_utils::pool::test_util::setup_connection_pool;
     use crate::domain::entity::posts::Post;
+    use crate::driver::users::test_utils::test_user_by_pool;
     use crate::usecase;
     use actix_web::{test, web, App};
-    use crate::driver::users::test_utils::test_user;
 
     /// # scenario
     ///
@@ -42,7 +42,7 @@ mod tests {
         )
         .await;
 
-        let user = test_user(pool.clone());
+        let user = test_user_by_pool(pool.clone());
 
         let req = test::TestRequest::post()
             .uri("/")
@@ -88,7 +88,7 @@ mod tests {
         )
         .await;
 
-        let user = test_user(pool.clone());
+        let user = test_user_by_pool(pool.clone());
 
         let req = test::TestRequest::post()
             .uri("/")
@@ -146,7 +146,7 @@ mod tests {
         )
         .await;
 
-        let user = test_user(pool.clone());
+        let user = test_user_by_pool(pool.clone());
 
         let req = test::TestRequest::post()
             .uri("/")
