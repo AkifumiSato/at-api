@@ -7,8 +7,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetParams {
-    pub page: Option<i32>,
-    pub count: Option<i32>,
+    user_id: i32,
+    page: Option<i32>,
+    count: Option<i32>,
 }
 
 impl GetParams {
@@ -16,7 +17,11 @@ impl GetParams {
         let page = self.page.unwrap_or_else(|| 1);
         let count = self.count.unwrap_or_else(|| 10);
 
-        InputData { page, count }
+        InputData {
+            user_id: self.user_id,
+            page,
+            count
+        }
     }
 }
 

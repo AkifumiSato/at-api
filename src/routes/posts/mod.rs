@@ -24,6 +24,7 @@ mod tests {
     use crate::domain::entity::posts::Post;
     use crate::usecase;
     use actix_web::{test, web, App};
+    use crate::driver::users::test_utils::test_user;
 
     /// # scenario
     ///
@@ -41,9 +42,12 @@ mod tests {
         )
         .await;
 
+        let user = test_user(pool.clone());
+
         let req = test::TestRequest::post()
             .uri("/")
             .set_json(&post::JsonBody::new(
+                user.id,
                 "unit test title",
                 "unit test body",
                 Some(true),
@@ -84,9 +88,12 @@ mod tests {
         )
         .await;
 
+        let user = test_user(pool.clone());
+
         let req = test::TestRequest::post()
             .uri("/")
             .set_json(&post::JsonBody::new(
+                user.id,
                 "unit test title",
                 "unit test body",
                 None,
@@ -139,9 +146,12 @@ mod tests {
         )
         .await;
 
+        let user = test_user(pool.clone());
+
         let req = test::TestRequest::post()
             .uri("/")
             .set_json(&post::JsonBody::new(
+                user.id,
                 "unit test title",
                 "unit test body",
                 Some(true),

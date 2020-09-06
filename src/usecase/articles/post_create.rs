@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
+    pub user_id: i32,
     pub title: String,
     pub body: String,
     pub published: bool,

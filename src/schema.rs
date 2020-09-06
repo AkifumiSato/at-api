@@ -25,6 +25,7 @@ table! {
         published -> Bool,
         published_at -> Timestamp,
         created_at -> Timestamp,
+        user_id -> Int4,
     }
 }
 
@@ -40,6 +41,7 @@ table! {
         id -> Int4,
         name -> Varchar,
         slug -> Varchar,
+        user_id -> Int4,
     }
 }
 
@@ -52,8 +54,10 @@ table! {
 joinable!(action_categories -> users (user_id));
 joinable!(action_records -> action_categories (category_id));
 joinable!(action_records -> users (user_id));
+joinable!(posts -> users (user_id));
 joinable!(posts_tags -> posts (post_id));
 joinable!(posts_tags -> tags (tag_id));
+joinable!(tags -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
     action_categories,

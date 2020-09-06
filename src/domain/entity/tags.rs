@@ -5,6 +5,7 @@ pub struct Tag {
     pub id: i32,
     pub name: String,
     pub slug: String,
+    pub user_id: i32,
 }
 
 #[derive(Debug, Queryable, Serialize)]

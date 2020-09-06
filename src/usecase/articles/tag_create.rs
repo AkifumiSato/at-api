@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub struct InputData {
     pub name: String,
     pub slug: String,
+    pub user_id: i32,
 }
 
 pub trait CreateTagUseCase {
