@@ -58,13 +58,13 @@ mod tests {
         assert_eq!("unit test title", resp.title);
         assert_eq!("unit test body", resp.body);
 
-        let req = test::TestRequest::get().uri("/?count=1").to_request();
+        let req = test::TestRequest::get().uri(&format!("/?user_id={}&count=1", user.id)).to_request();
         let resp: usecase::articles::get_list::OutputData =
             test::read_response_json(&mut app, req).await;
         assert_eq!(1, resp.result.iter().len());
         assert_eq!(id, resp.result.first().unwrap().id);
 
-        let req = test::TestRequest::get().uri("/").to_request();
+        let req = test::TestRequest::get().uri(&format!("/?user_id={}", user.id)).to_request();
         let resp: usecase::articles::get_list::OutputData =
             test::read_response_json(&mut app, req).await;
         assert_eq!(id, resp.result.first().unwrap().id);
@@ -104,10 +104,10 @@ mod tests {
         assert_eq!("unit test title", resp.title);
         assert_eq!("unit test body", resp.body);
 
-        let req = test::TestRequest::get().uri("/?count=1").to_request();
+        let req = test::TestRequest::get().uri(&format!("/?user_id={}&count=1", user.id)).to_request();
         let resp: usecase::articles::get_list::OutputData =
             test::read_response_json(&mut app, req).await;
-        assert_ne!(id, resp.result.first().unwrap().id);
+        assert!(resp.result.first().is_none());
 
         let req = test::TestRequest::patch()
             .uri("/")
@@ -121,7 +121,7 @@ mod tests {
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
 
-        let req = test::TestRequest::get().uri("/?count=1").to_request();
+        let req = test::TestRequest::get().uri(&format!("/?user_id={}&count=1", user.id)).to_request();
         let resp: usecase::articles::get_list::OutputData =
             test::read_response_json(&mut app, req).await;
         assert_eq!(1, resp.result.iter().len());
