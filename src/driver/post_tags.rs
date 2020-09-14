@@ -137,11 +137,11 @@ impl<'a> DeleteTagUseCase for PostTagDriver<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::database_utils::pool::test_util;
     use crate::driver::posts::PostDriver;
     use crate::driver::users::test_utils::test_user_by_connection;
     use crate::usecase::articles::post_create;
     use crate::usecase::articles::post_create::CreatePostUseCase;
-    use crate::database_utils::pool::test_util;
 
     #[test]
     fn tags_scenario() {
