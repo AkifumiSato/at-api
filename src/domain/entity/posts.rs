@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Queryable, Serialize, Deserialize)]
 pub struct Post {
     pub id: i32,
+    pub user_id: i32,
     pub title: String,
     pub body: String,
     pub published: bool,
@@ -14,5 +15,4 @@ pub struct Post {
     #[serde(serialize_with = "serialize")]
     #[serde(deserialize_with = "deserialize")]
     pub published_at: NaiveDateTime,
-    pub user_id: i32,
 }

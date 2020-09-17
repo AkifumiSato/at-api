@@ -1,6 +1,6 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    uid VARCHAR(48) UNIQUE
+    uid VARCHAR(48) NOT NULL UNIQUE
 );
 
 CREATE TABLE posts (

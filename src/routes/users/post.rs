@@ -6,17 +6,19 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JsonBody {
-    id: i32,
+    uid: String,
 }
 
 impl JsonBody {
     #[cfg(test)]
     pub fn new(id: i32) -> JsonBody {
-        JsonBody { id }
+        JsonBody { uid }
     }
 
     pub fn to_input_data(&self) -> InputData {
-        InputData { id: self.id }
+        InputData {
+            uid: self.uid.clone(),
+        }
     }
 }
 
