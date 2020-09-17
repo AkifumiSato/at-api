@@ -20,7 +20,7 @@ mod tests {
     use super::*;
     use crate::database_utils::pool::test_util::setup_connection_pool;
     use crate::domain::entity::action_record::ActionCategory;
-    use crate::driver::users::test_utils::test_user;
+    use crate::driver::users::test_utils::test_user_by_pool;
     use actix_web::{test, web, App};
 
     /// # scenario
@@ -44,7 +44,7 @@ mod tests {
         )
         .await;
 
-        let user = test_user(pool.clone());
+        let user = test_user_by_pool(pool.clone());
 
         let category_name_data = "Unit test category";
         let req = test::TestRequest::post()

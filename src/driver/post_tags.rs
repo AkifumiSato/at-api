@@ -29,11 +29,16 @@ impl UpdateTag {
 struct NewTag {
     name: String,
     slug: String,
+    user_id: i32,
 }
 
 impl NewTag {
-    pub fn new(name: String, slug: String) -> NewTag {
-        NewTag { name, slug }
+    pub fn from_input(input: tag_create::InputData) -> NewTag {
+        NewTag {
+            user_id: input.user_id,
+            name: input.name,
+            slug: input.slug,
+        }
     }
 }
 
@@ -85,7 +90,7 @@ impl<'a> TagAllGetUseCase for PostTagDriver<'a> {
 impl<'a> CreateTagUseCase for PostTagDriver<'a> {
     fn create(&self, input: tag_create::InputData) -> Result<Tag, DataAccessError> {
         let result = diesel::insert_into(tags::table)
-            .values(NewTag::new(input.name, input.slug))
+            .values(NewTag::from_input(input))
             .get_result::<Tag>(self.connection);
 
         self.parse_data_access_result(result)
@@ -134,16 +139,19 @@ mod test {
     use super::*;
     use crate::database_utils::pool::test_util;
     use crate::driver::posts::PostDriver;
+    use crate::driver::users::test_utils::test_user_by_connection;
     use crate::usecase::articles::post_create;
     use crate::usecase::articles::post_create::CreatePostUseCase;
 
     #[test]
     fn tags_scenario() {
         let connection = test_util::connection_init();
+        let user = test_user_by_connection(&connection);
         let tags_driver = PostTagDriver::new(&connection);
         let post_driver = PostDriver::new(&connection);
 
         let new_input = post_create::InputData {
+            user_id: user.id,
             title: "unit test title222".to_string(),
             body: "unit test body222".to_string(),
             published: false,
@@ -151,6 +159,7 @@ mod test {
         let created_posts = post_driver.create(new_input).unwrap();
 
         let new_tag = tag_create::InputData {
+            user_id: user.id,
             name: "test name".to_string(),
             slug: "test slug".to_string(),
         };

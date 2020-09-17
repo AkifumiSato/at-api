@@ -14,4 +14,5 @@ pub struct Post {
     #[serde(serialize_with = "serialize")]
     #[serde(deserialize_with = "deserialize")]
     pub published_at: NaiveDateTime,
+    pub user_id: i32,
 }

@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
+    pub user_id: i32,
     pub page: i32,
     pub count: i32,
 }
@@ -63,7 +64,7 @@ pub struct OutputData {
 }
 
 pub trait ArticleListUseCase {
-    fn show(&self, count: i32, page: i32) -> Result<Vec<Post>, DataAccessError>;
+    fn show(&self, input: InputData) -> Result<Vec<Post>, DataAccessError>;
 }
 
 pub trait TagFindsUseCase {
@@ -79,7 +80,7 @@ where
     T: ArticleListUseCase,
     U: TagFindsUseCase,
 {
-    let posts = article_data_access.show(input.count, input.page)?;
+    let posts = article_data_access.show(input)?;
     let post_ids = posts.iter().map(|post| post.id).collect::<Vec<i32>>();
     let tags = tags_data_access.find_by_post_ids(post_ids)?;
 

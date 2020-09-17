@@ -2,8 +2,9 @@ use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::posts::Post;
 use crate::schema::posts;
 use crate::schema::posts::dsl;
+use crate::schema::users;
 use crate::usecase::articles::find::ArticleFindUseCase;
-use crate::usecase::articles::get_list::ArticleListUseCase;
+use crate::usecase::articles::get_list::{self, ArticleListUseCase};
 use crate::usecase::articles::post_create::{self, CreatePostUseCase};
 use crate::usecase::articles::post_delete::DeletePostUseCase;
 use crate::usecase::articles::post_update::{self, UpdateUseCase};
@@ -13,17 +14,19 @@ use diesel::prelude::*;
 #[derive(Insertable)]
 #[table_name = "posts"]
 struct PostNewAccess<'a> {
+    user_id: i32,
     title: &'a str,
     body: &'a str,
     published: bool,
 }
 
 impl<'a> PostNewAccess<'a> {
-    pub fn new(title: &'a str, body: &'a str, published: bool) -> PostNewAccess<'a> {
+    pub fn from_input(input: &'a post_create::InputData) -> PostNewAccess<'a> {
         PostNewAccess {
-            title,
-            body,
-            published,
+            user_id: input.user_id,
+            title: &input.title,
+            body: &input.body,
+            published: input.published,
         }
     }
 }
@@ -74,12 +77,13 @@ impl<'a> ArticleFindUseCase for PostDriver<'a> {
 }
 
 impl<'a> ArticleListUseCase for PostDriver<'a> {
-    fn show(&self, count: i32, page: i32) -> Result<Vec<Post>, DataAccessError> {
-        let offset = count * (page - 1);
+    fn show(&self, input: get_list::InputData) -> Result<Vec<Post>, DataAccessError> {
+        let offset = input.count * (input.page - 1);
 
         let result = dsl::posts
+            .filter(dsl::user_id.eq(input.user_id))
             .filter(dsl::published.eq(true))
-            .limit(count as i64)
+            .limit(input.count as i64)
             .offset(offset as i64)
             .order(dsl::id.desc())
             .load::<Post>(self.connection);
@@ -90,7 +94,20 @@ impl<'a> ArticleListUseCase for PostDriver<'a> {
 
 impl<'a> CreatePostUseCase for PostDriver<'a> {
     fn create(&self, input: post_create::InputData) -> Result<Post, DataAccessError> {
-        let new_post = PostNewAccess::new(&input.title, &input.body, input.published);
+        let target_user = users::dsl::users
+            .filter(users::dsl::id.eq(input.user_id))
+            .select(users::id)
+            .first::<i32>(self.connection)
+            .optional()
+            .or_else(|_| Err(DataAccessError::InternalError))?;
+
+        if target_user.is_none() || target_user.unwrap() != input.user_id {
+            return Err(DataAccessError::InternalErrorWithMessage(
+                "User not found!".to_string(),
+            ));
+        }
+
+        let new_post = PostNewAccess::from_input(&input);
 
         let result = diesel::insert_into(posts::table)
             .values(new_post)
@@ -132,13 +149,16 @@ impl<'a> UpdateUseCase for PostDriver<'a> {
 mod test {
     use super::*;
     use crate::database_utils::pool::test_util;
+    use crate::driver::users::test_utils::test_user_by_connection;
 
     #[test]
     fn scenario() {
         let connection = test_util::connection_init();
         let post_driver = PostDriver::new(&connection);
+        let user = test_user_by_connection(&connection);
 
         let new_input1 = post_create::InputData {
+            user_id: user.id,
             title: "unit test title111".to_string(),
             body: "unit test body111".to_string(),
             published: true,
@@ -146,6 +166,7 @@ mod test {
         let created_posts1 = post_driver.create(new_input1).unwrap();
 
         let new_input2 = post_create::InputData {
+            user_id: user.id,
             title: "unit test title222".to_string(),
             body: "unit test body222".to_string(),
             published: false,
@@ -158,7 +179,13 @@ mod test {
             Some(true),
         ));
 
-        let posts = post_driver.show(2, 1).unwrap();
+        let posts = post_driver
+            .show(get_list::InputData {
+                user_id: user.id,
+                page: 1,
+                count: 2,
+            })
+            .unwrap();
 
         let result = posts
             .iter()
@@ -174,13 +201,25 @@ mod test {
             None,
         );
         let _result = post_driver.update(update_post);
-        let posts = post_driver.show(1, 1).unwrap();
+        let posts = post_driver
+            .show(get_list::InputData {
+                user_id: user.id,
+                page: 1,
+                count: 1,
+            })
+            .unwrap();
 
         assert_eq!(posts.first().unwrap().title, "update test title333");
         assert_eq!(posts.first().unwrap().body, "update test body333");
 
         let _result = post_driver.delete(created_posts2.id);
-        let posts = post_driver.show(1, 1).unwrap();
+        let posts = post_driver
+            .show(get_list::InputData {
+                user_id: user.id,
+                page: 1,
+                count: 1,
+            })
+            .unwrap();
         assert_ne!(posts.first().unwrap().title, "update test title333");
 
         let result = post_driver.find(created_posts1.id).unwrap().unwrap();
