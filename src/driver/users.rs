@@ -112,6 +112,7 @@ pub mod test_utils {
 
     pub fn test_user_by_connection(connection: &PgConnection) -> User {
         let user_driver = UserDriver::new(&connection);
+        let test_uid = "asdfghjkl";
 
         let user_is_registered = user_driver.is_registered(test_uid.to_string()).unwrap();
         match user_is_registered {

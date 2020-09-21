@@ -11,7 +11,7 @@ pub struct JsonBody {
 
 impl JsonBody {
     #[cfg(test)]
-    pub fn new(id: i32) -> JsonBody {
+    pub fn new(uid: String) -> JsonBody {
         JsonBody { uid }
     }
 
