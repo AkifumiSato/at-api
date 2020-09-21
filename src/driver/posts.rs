@@ -9,7 +9,7 @@ use crate::usecase::articles::post_delete::DeletePostUseCase;
 use crate::usecase::articles::post_update::{self, UpdateUseCase};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use crate::driver::common::get_registered_user;
+use crate::driver::common::{get_registered_user};
 
 #[derive(Insertable)]
 #[table_name = "posts"]
@@ -81,10 +81,12 @@ impl<'a> ArticleFindUseCase for PostDriver<'a> {
 
 impl<'a> ArticleListUseCase for PostDriver<'a> {
     fn show(&self, input: get_list::InputData) -> Result<Vec<Post>, DataAccessError> {
+        let user = get_registered_user(self.connection, input.uid)?;
+
         let offset = input.count * (input.page - 1);
 
         let result = dsl::posts
-            .filter(dsl::user_id.eq(input.user_id))
+            .filter(dsl::user_id.eq(user.id)) // todo inner join
             .filter(dsl::published.eq(true))
             .limit(input.count as i64)
             .offset(offset as i64)
@@ -173,7 +175,7 @@ mod test {
 
         let posts = post_driver
             .show(get_list::InputData {
-                user_id: user.id,
+                uid: user.uid.clone(),
                 page: 1,
                 count: 2,
             })
@@ -195,7 +197,7 @@ mod test {
         let _result = post_driver.update(update_post);
         let posts = post_driver
             .show(get_list::InputData {
-                user_id: user.id,
+                uid: user.uid.clone(),
                 page: 1,
                 count: 1,
             })
@@ -207,7 +209,7 @@ mod test {
         let _result = post_driver.delete(created_posts2.id);
         let posts = post_driver
             .show(get_list::InputData {
-                user_id: user.id,
+                uid: user.uid.clone(),
                 page: 1,
                 count: 1,
             })
