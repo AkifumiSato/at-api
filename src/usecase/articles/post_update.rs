@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
+    pub uid: String,
     pub id: i32,
     pub title: Option<String>,
     pub body: Option<String>,
@@ -12,12 +13,14 @@ pub struct InputData {
 impl InputData {
     #[cfg(test)]
     pub fn new<'a>(
+        uid: String,
         id: i32,
         title: Option<&'a str>,
         body: Option<&'a str>,
         published: Option<bool>,
     ) -> InputData {
         InputData {
+            uid,
             id,
             title: title.map(|v| v.to_string()),
             body: body.map(|v| v.to_string()),

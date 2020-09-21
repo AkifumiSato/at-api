@@ -70,6 +70,7 @@ impl<'a> ArticleFindUseCase for PostDriver<'a> {
         // user registered check
         let _user = get_registered_user(self.connection, input.uid.clone())?;
 
+        // todo add: uidとidが結びついてるかどうか検査
         let result = dsl::posts
             .find(input.id)
             .first::<Post>(self.connection)
@@ -124,6 +125,10 @@ impl<'a> DeletePostUseCase for PostDriver<'a> {
 
 impl<'a> UpdateUseCase for PostDriver<'a> {
     fn update(&self, input: post_update::InputData) -> Result<(), DataAccessError> {
+        // user registered check
+        let _user = get_registered_user(self.connection, input.uid.clone())?;
+
+        // todo add: uidとidが結びついてるかどうか検査
         let result = diesel::update(dsl::posts.find(input.id))
             .set(PostUpdateAccess::new(
                 input.title,
@@ -167,6 +172,7 @@ mod test {
         };
         let created_posts2 = post_driver.create(new_input2).unwrap();
         let _published_post = post_driver.update(post_update::InputData::new(
+            user.uid.clone(),
             created_posts2.id,
             None,
             None,
@@ -189,6 +195,7 @@ mod test {
         assert_eq!(result, ["unit test title222", "unit test title111"]);
 
         let update_post = post_update::InputData::new(
+            user.uid.clone(),
             created_posts2.id,
             Some("update test title333"),
             Some("update test body333"),

@@ -118,6 +118,7 @@ mod tests {
         let req = test::TestRequest::patch()
             .uri("/")
             .set_json(&usecase::articles::post_update::InputData::new(
+                user.uid.clone(),
                 id,
                 None,
                 None,
