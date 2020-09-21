@@ -182,7 +182,7 @@ mod tests {
 
         let req = test::TestRequest::delete()
             .uri("/")
-            .set_json(&usecase::articles::post_delete::InputData::new(id))
+            .set_json(&usecase::articles::post_delete::InputData::new(user.uid.clone(), id))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());

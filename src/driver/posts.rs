@@ -6,7 +6,7 @@ use crate::schema::posts::dsl;
 use crate::usecase::articles::find::{self, ArticleFindUseCase};
 use crate::usecase::articles::get_list::{self, ArticleListUseCase};
 use crate::usecase::articles::post_create::{self, CreatePostUseCase};
-use crate::usecase::articles::post_delete::DeletePostUseCase;
+use crate::usecase::articles::post_delete::{self, DeletePostUseCase};
 use crate::usecase::articles::post_update::{self, UpdateUseCase};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
@@ -113,8 +113,13 @@ impl<'a> CreatePostUseCase for PostDriver<'a> {
 }
 
 impl<'a> DeletePostUseCase for PostDriver<'a> {
-    fn delete(&self, target_id: i32) -> Result<(), DataAccessError> {
-        let result = diesel::delete(dsl::posts.find(target_id)).execute(self.connection);
+    fn delete(&self, input: post_delete::InputData) -> Result<(), DataAccessError> {
+        // user registered check
+        let _user = get_registered_user(self.connection, input.uid.clone())?;
+
+        // todo add: uidとidが結びついてるかどうか検査
+        // todo add: idに対応するPOSTが実在するか確認
+        let result = diesel::delete(dsl::posts.find(input.id)).execute(self.connection);
 
         match result {
             Ok(_) => Ok(()),
@@ -213,7 +218,7 @@ mod test {
         assert_eq!(posts.first().unwrap().title, "update test title333");
         assert_eq!(posts.first().unwrap().body, "update test body333");
 
-        let _result = post_driver.delete(created_posts2.id);
+        let _result = post_driver.delete(post_delete::InputData::new(user.uid.clone(), created_posts2.id));
         let posts = post_driver
             .show(get_list::InputData {
                 uid: user.uid.clone(),
