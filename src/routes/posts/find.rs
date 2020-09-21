@@ -3,7 +3,7 @@ use crate::driver::posts::PostDriver;
 use crate::usecase::articles::find::{self, InputData};
 use actix_web::{web, HttpResponse};
 
-pub async fn index(pool: web::Data<DbPool>, info: web::Path<InputData>) -> HttpResponse {
+pub async fn index(pool: web::Data<DbPool>, info: web::Query<InputData>) -> HttpResponse {
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");

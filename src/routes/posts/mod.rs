@@ -13,7 +13,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route("", web::post().to(post::index))
             .route("", web::patch().to(patch::index))
             .route("", web::delete().to(delete::index))
-            .route("{id}/", web::get().to(find::index)),
+            .route("find/", web::get().to(find::index)),
     );
 }
 
@@ -47,7 +47,7 @@ mod tests {
         let req = test::TestRequest::post()
             .uri("/")
             .set_json(&post::JsonBody::new(
-                user.id,
+                user.uid,
                 "unit test title",
                 "unit test body",
                 Some(true),
@@ -97,7 +97,7 @@ mod tests {
         let req = test::TestRequest::post()
             .uri("/")
             .set_json(&post::JsonBody::new(
-                user.id,
+                user.uid,
                 "unit test title",
                 "unit test body",
                 None,
@@ -159,7 +159,7 @@ mod tests {
         let req = test::TestRequest::post()
             .uri("/")
             .set_json(&post::JsonBody::new(
-                user.id,
+                user.uid.clone(),
                 "unit test title",
                 "unit test body",
                 Some(true),
@@ -171,7 +171,7 @@ mod tests {
         assert_eq!("unit test body", resp.body);
 
         let req = test::TestRequest::get()
-            .uri(&format!("/{}/", id))
+            .uri(&format!("/find/?id={}&uid={}", id, user.uid.clone()))
             .to_request();
         let resp: usecase::articles::find::OutputData =
             test::read_response_json(&mut app, req).await;
@@ -187,7 +187,7 @@ mod tests {
         assert!(resp.status().is_success());
 
         let req = test::TestRequest::get()
-            .uri(&format!("/{}/", id))
+            .uri(&format!("/find/?id={}&uid={}", id, user.uid.clone()))
             .to_request();
         let resp: usecase::articles::find::OutputData =
             test::read_response_json(&mut app, req).await;

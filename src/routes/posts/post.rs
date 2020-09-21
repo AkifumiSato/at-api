@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JsonBody {
-    user_id: i32,
+    user_id: String,
     title: String,
     body: String,
     published: Option<bool>,
@@ -14,7 +14,7 @@ pub struct JsonBody {
 
 impl JsonBody {
     #[cfg(test)]
-    pub fn new(user_id: i32, title: &str, body: &str, published: Option<bool>) -> JsonBody {
+    pub fn new(user_id: String, title: &str, body: &str, published: Option<bool>) -> JsonBody {
         JsonBody {
             user_id,
             title: title.to_string(),
@@ -30,7 +30,7 @@ impl JsonBody {
         };
 
         InputData {
-            user_id: self.user_id,
+            user_id: self.user_id.clone(),
             title: self.title.to_string(),
             body: self.body.to_string(),
             published,
