@@ -6,6 +6,7 @@ use crate::usecase::users::check::CheckUserUseCase;
 use crate::usecase::users::delete::DeleteUserUseCase;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
+use crate::driver::common::{get_user, get_registered_user};
 
 #[derive(Insertable)]
 #[table_name = "users"]
@@ -27,37 +28,13 @@ impl<'a> UserDriver<'a> {
     pub fn new(connection: &'a PgConnection) -> UserDriver<'a> {
         UserDriver { connection }
     }
-
-    pub fn get_user(&self, uid: String) -> Result<Option<User>, DataAccessError> {
-        users::dsl::users
-            .filter(users::dsl::uid.eq(uid.clone()))
-            .first::<User>(self.connection)
-            .optional()
-            .or_else(|_| Err(DataAccessError::InternalError))
-    }
-
-    pub fn get_registered_user(&self, uid: String) -> Result<User, DataAccessError> {
-        let target_user = users::dsl::users
-            .filter(users::dsl::uid.eq(uid.clone()))
-            .first::<User>(self.connection)
-            .optional()
-            .or_else(|_| Err(DataAccessError::InternalError))?;
-
-        if target_user.is_none() {
-            return Err(DataAccessError::InternalErrorWithMessage(
-                "User not found!".to_string(),
-            ));
-        } else {
-            Ok(target_user.unwrap())
-        }
-    }
 }
 
 impl<'a> UseCase for UserDriver<'a> {}
 
 impl<'a> CreateUserUseCase for UserDriver<'a> {
     fn create(&self, uid: String) -> Result<User, DataAccessError> {
-        let user = self.get_user(uid.clone())?;
+        let user = get_user(self.connection, uid.clone())?;
         if user.is_some() {
             return Err(DataAccessError::InternalErrorWithMessage(
                 "Specified id is already exist!".to_string(),
@@ -77,7 +54,7 @@ impl<'a> CreateUserUseCase for UserDriver<'a> {
 impl<'a> DeleteUserUseCase for UserDriver<'a> {
     fn delete(&self, uid: String) -> Result<(), DataAccessError> {
         // user registered check
-        let _user = self.get_registered_user(uid.clone())?;
+        let _user = get_registered_user(self.connection, uid.clone())?;
 
         let result = diesel::delete(dsl::users.filter(dsl::uid.eq(uid))).execute(self.connection);
 
@@ -92,7 +69,7 @@ impl<'a> CheckUserUseCase for UserDriver<'a> {
     fn check_user(&self, uid: String) -> Result<Option<User>, DataAccessError> {
         // use caseの実装と共通の振る舞いは分離するため、
         // 本メソッドはget_userへの中継のみ
-        self.get_user(uid)
+        get_user(self.connection, uid)
     }
 }
 
