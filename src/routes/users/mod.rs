@@ -56,7 +56,9 @@ mod tests {
 
         let req = test::TestRequest::delete()
             .uri("/")
-            .set_json(&usecase::users::delete::InputData { uid: test_id.to_string() })
+            .set_json(&usecase::users::delete::InputData {
+                uid: test_id.to_string(),
+            })
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());

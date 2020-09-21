@@ -1,12 +1,12 @@
 use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::user::User;
+use crate::driver::common::{get_registered_user, get_user};
 use crate::schema::users::{self, dsl};
 use crate::usecase::users::add::CreateUserUseCase;
 use crate::usecase::users::check::CheckUserUseCase;
 use crate::usecase::users::delete::DeleteUserUseCase;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use crate::driver::common::{get_user, get_registered_user};
 
 #[derive(Insertable)]
 #[table_name = "users"]

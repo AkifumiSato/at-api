@@ -11,10 +11,7 @@ pub struct InputData {
 impl InputData {
     #[cfg(test)]
     pub fn new<'a>(id: i32, uid: String) -> InputData {
-        InputData {
-            id,
-            uid,
-        }
+        InputData { id, uid }
     }
 }
 

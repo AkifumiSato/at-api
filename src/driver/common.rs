@@ -12,7 +12,10 @@ pub fn get_user(connection: &PgConnection, uid: String) -> Result<Option<User>, 
         .or_else(|_| Err(DataAccessError::InternalError))
 }
 
-pub fn get_registered_user(connection: &PgConnection, uid: String) -> Result<User, DataAccessError> {
+pub fn get_registered_user(
+    connection: &PgConnection,
+    uid: String,
+) -> Result<User, DataAccessError> {
     let target_user = users::dsl::users
         .filter(users::dsl::uid.eq(uid.clone()))
         .first::<User>(connection)

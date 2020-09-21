@@ -30,7 +30,6 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Json<JsonBody>) -> HttpRe
 
     match add_user::execute(user_driver, item.to_input_data()) {
         Ok(user) => HttpResponse::Created().json(user),
-        Err(e) => HttpResponse::InternalServerError()
-            .body(e.to_string()),
+        Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
 }

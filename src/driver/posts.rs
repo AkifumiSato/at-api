@@ -1,5 +1,6 @@
 use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::posts::Post;
+use crate::driver::common::get_registered_user;
 use crate::schema::posts;
 use crate::schema::posts::dsl;
 use crate::usecase::articles::find::{self, ArticleFindUseCase};
@@ -9,7 +10,6 @@ use crate::usecase::articles::post_delete::DeletePostUseCase;
 use crate::usecase::articles::post_update::{self, UpdateUseCase};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use crate::driver::common::{get_registered_user};
 
 #[derive(Insertable)]
 #[table_name = "posts"]
@@ -216,10 +216,15 @@ mod test {
             .unwrap();
         assert_ne!(posts.first().unwrap().title, "update test title333");
 
-        let result = post_driver.find(find::InputData::new(created_posts1.id, user.uid.clone())).unwrap().unwrap();
+        let result = post_driver
+            .find(find::InputData::new(created_posts1.id, user.uid.clone()))
+            .unwrap()
+            .unwrap();
         assert_eq!(result.title, "unit test title111");
 
-        let result = post_driver.find(find::InputData::new(created_posts2.id, user.uid.clone())).unwrap();
+        let result = post_driver
+            .find(find::InputData::new(created_posts2.id, user.uid.clone()))
+            .unwrap();
         assert!(result.is_none());
     }
 }
