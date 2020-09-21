@@ -1,2 +1,0 @@
-ALTER TABLE posts DROP COLUMN user_id;
-ALTER TABLE tags DROP COLUMN user_id;

@@ -151,7 +151,7 @@ mod test {
         let post_driver = PostDriver::new(&connection);
 
         let new_input = post_create::InputData {
-            user_id: user.id,
+            user_id: user.uid,
             title: "unit test title222".to_string(),
             body: "unit test body222".to_string(),
             published: false,

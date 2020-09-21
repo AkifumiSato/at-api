@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
-    pub user_id: i32,
+    pub uid: String,
     pub page: i32,
     pub count: i32,
 }

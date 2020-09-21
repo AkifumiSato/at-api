@@ -13,7 +13,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route("", web::post().to(post::index))
             .route("", web::patch().to(patch::index))
             .route("", web::delete().to(delete::index))
-            .route("{id}/", web::get().to(find::index)),
+            .route("find/", web::get().to(find::index)),
     );
 }
 
@@ -47,7 +47,7 @@ mod tests {
         let req = test::TestRequest::post()
             .uri("/")
             .set_json(&post::JsonBody::new(
-                user.id,
+                user.uid.clone(),
                 "unit test title",
                 "unit test body",
                 Some(true),
@@ -59,7 +59,7 @@ mod tests {
         assert_eq!("unit test body", resp.body);
 
         let req = test::TestRequest::get()
-            .uri(&format!("/?user_id={}&count=1", user.id))
+            .uri(&format!("/?uid={}&count=1", user.uid.clone()))
             .to_request();
         let resp: usecase::articles::get_list::OutputData =
             test::read_response_json(&mut app, req).await;
@@ -67,7 +67,7 @@ mod tests {
         assert_eq!(id, resp.result.first().unwrap().id);
 
         let req = test::TestRequest::get()
-            .uri(&format!("/?user_id={}", user.id))
+            .uri(&format!("/?uid={}", user.uid.clone()))
             .to_request();
         let resp: usecase::articles::get_list::OutputData =
             test::read_response_json(&mut app, req).await;
@@ -97,7 +97,7 @@ mod tests {
         let req = test::TestRequest::post()
             .uri("/")
             .set_json(&post::JsonBody::new(
-                user.id,
+                user.uid.clone(),
                 "unit test title",
                 "unit test body",
                 None,
@@ -109,7 +109,7 @@ mod tests {
         assert_eq!("unit test body", resp.body);
 
         let req = test::TestRequest::get()
-            .uri(&format!("/?user_id={}&count=1", user.id))
+            .uri(&format!("/?uid={}&count=1", user.uid.clone()))
             .to_request();
         let resp: usecase::articles::get_list::OutputData =
             test::read_response_json(&mut app, req).await;
@@ -118,6 +118,7 @@ mod tests {
         let req = test::TestRequest::patch()
             .uri("/")
             .set_json(&usecase::articles::post_update::InputData::new(
+                user.uid.clone(),
                 id,
                 None,
                 None,
@@ -128,7 +129,7 @@ mod tests {
         assert!(resp.status().is_success());
 
         let req = test::TestRequest::get()
-            .uri(&format!("/?user_id={}&count=1", user.id))
+            .uri(&format!("/?uid={}&count=1", user.uid.clone()))
             .to_request();
         let resp: usecase::articles::get_list::OutputData =
             test::read_response_json(&mut app, req).await;
@@ -159,7 +160,7 @@ mod tests {
         let req = test::TestRequest::post()
             .uri("/")
             .set_json(&post::JsonBody::new(
-                user.id,
+                user.uid.clone(),
                 "unit test title",
                 "unit test body",
                 Some(true),
@@ -171,7 +172,7 @@ mod tests {
         assert_eq!("unit test body", resp.body);
 
         let req = test::TestRequest::get()
-            .uri(&format!("/{}/", id))
+            .uri(&format!("/find/?id={}&uid={}", id, user.uid.clone()))
             .to_request();
         let resp: usecase::articles::find::OutputData =
             test::read_response_json(&mut app, req).await;
@@ -181,13 +182,13 @@ mod tests {
 
         let req = test::TestRequest::delete()
             .uri("/")
-            .set_json(&usecase::articles::post_delete::InputData::new(id))
+            .set_json(&usecase::articles::post_delete::InputData::new(user.uid.clone(), id))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
 
         let req = test::TestRequest::get()
-            .uri(&format!("/{}/", id))
+            .uri(&format!("/find/?id={}&uid={}", id, user.uid.clone()))
             .to_request();
         let resp: usecase::articles::find::OutputData =
             test::read_response_json(&mut app, req).await;

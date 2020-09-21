@@ -7,9 +7,9 @@ use actix_web::web;
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/")
+            .route("", web::get().to(get::index))
             .route("", web::post().to(post::index))
-            .route("", web::delete().to(delete::index))
-            .route("{id}/", web::get().to(get::index)),
+            .route("", web::delete().to(delete::index)),
     );
 }
 
@@ -39,30 +39,32 @@ mod tests {
         )
         .await;
 
-        let test_id = 2147483647;
+        let test_id = "asdfghjkl";
 
         let req = test::TestRequest::post()
             .uri("/")
-            .set_json(&post::JsonBody::new(test_id)) // int max
+            .set_json(&post::JsonBody::new(test_id.to_string())) // int max
             .to_request();
         let resp: User = test::read_response_json(&mut app, req).await;
-        assert_eq!(test_id, resp.id);
+        assert_eq!(test_id, resp.uid);
 
         let req = test::TestRequest::get()
-            .uri(&format!("/{}/", test_id))
+            .uri(&format!("/?uid={}", test_id))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert_eq!(resp.status().as_u16(), 200);
 
         let req = test::TestRequest::delete()
             .uri("/")
-            .set_json(&usecase::users::delete::InputData { id: test_id })
+            .set_json(&usecase::users::delete::InputData {
+                uid: test_id.to_string(),
+            })
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
 
         let req = test::TestRequest::get()
-            .uri(&format!("/{}/", test_id))
+            .uri(&format!("/?uid={}", test_id))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert_eq!(resp.status().as_u16(), 204);

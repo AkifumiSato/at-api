@@ -1,5 +1,6 @@
 use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::user::User;
+use crate::driver::common::{get_registered_user, get_user};
 use crate::schema::users::{self, dsl};
 use crate::usecase::users::add::CreateUserUseCase;
 use crate::usecase::users::check::CheckUserUseCase;
@@ -10,12 +11,12 @@ use diesel::prelude::*;
 #[derive(Insertable)]
 #[table_name = "users"]
 struct NewUser {
-    id: i32,
+    uid: String,
 }
 
 impl NewUser {
-    pub fn new(id: i32) -> NewUser {
-        NewUser { id }
+    pub fn new(uid: String) -> NewUser {
+        NewUser { uid }
     }
 }
 
@@ -32,8 +33,15 @@ impl<'a> UserDriver<'a> {
 impl<'a> UseCase for UserDriver<'a> {}
 
 impl<'a> CreateUserUseCase for UserDriver<'a> {
-    fn create(&self, user_id: i32) -> Result<User, DataAccessError> {
-        let new_user = NewUser::new(user_id);
+    fn create(&self, uid: String) -> Result<User, DataAccessError> {
+        let user = get_user(self.connection, uid.clone())?;
+        if user.is_some() {
+            return Err(DataAccessError::InternalErrorWithMessage(
+                "Specified id is already exist!".to_string(),
+            ));
+        }
+
+        let new_user = NewUser::new(uid);
 
         let result = diesel::insert_into(users::table)
             .values(new_user)
@@ -44,8 +52,11 @@ impl<'a> CreateUserUseCase for UserDriver<'a> {
 }
 
 impl<'a> DeleteUserUseCase for UserDriver<'a> {
-    fn delete(&self, user_id: i32) -> Result<(), DataAccessError> {
-        let result = diesel::delete(dsl::users.find(user_id)).execute(self.connection);
+    fn delete(&self, uid: String) -> Result<(), DataAccessError> {
+        // user registered check
+        let _user = get_registered_user(self.connection, uid.clone())?;
+
+        let result = diesel::delete(dsl::users.filter(dsl::uid.eq(uid))).execute(self.connection);
 
         match result {
             Ok(_) => Ok(()),
@@ -55,13 +66,10 @@ impl<'a> DeleteUserUseCase for UserDriver<'a> {
 }
 
 impl<'a> CheckUserUseCase for UserDriver<'a> {
-    fn is_registered(&self, user_id: i32) -> Result<Option<User>, DataAccessError> {
-        let result = dsl::users
-            .find(user_id)
-            .first::<User>(self.connection)
-            .optional();
-
-        self.parse_data_access_result(result)
+    fn check_user(&self, uid: String) -> Result<Option<User>, DataAccessError> {
+        // use caseの実装と共通の振る舞いは分離するため、
+        // 本メソッドはget_userへの中継のみ
+        get_user(self.connection, uid)
     }
 }
 
@@ -74,18 +82,19 @@ mod test {
     fn user_driver_scenario() {
         let connection = test_util::connection_init();
         let user_driver = UserDriver::new(&connection);
+        let test_uid = "asdfghjkl";
 
-        let created_posts1 = user_driver.create(9999).unwrap();
-        assert_eq!(created_posts1.id, 9999);
+        let created_posts1 = user_driver.create(test_uid.to_string()).unwrap();
+        assert_eq!(created_posts1.uid, test_uid.to_string());
 
-        let user_is_registered = user_driver.is_registered(9999).unwrap();
+        let user_is_registered = user_driver.check_user(test_uid.to_string()).unwrap();
         assert!(user_is_registered.is_some());
-        assert_eq!(user_is_registered.unwrap().id, 9999);
+        assert_eq!(user_is_registered.unwrap().uid, test_uid.to_string());
 
-        let delete = user_driver.delete(9999);
+        let delete = user_driver.delete(test_uid.to_string());
         assert!(delete.is_ok());
 
-        let user_is_registered = user_driver.is_registered(9999).unwrap();
+        let user_is_registered = user_driver.check_user(test_uid.to_string()).unwrap();
         assert!(user_is_registered.is_none());
     }
 }
@@ -100,21 +109,23 @@ pub mod test_utils {
             .get()
             .expect("couldn't get driver connection from pool");
         let user_driver = UserDriver::new(&connection);
+        let test_uid = "asdfghjkl";
 
-        let user_is_registered = user_driver.is_registered(9999).unwrap();
+        let user_is_registered = user_driver.check_user(test_uid.to_string()).unwrap();
         match user_is_registered {
             Some(user) => user,
-            None => user_driver.create(9999).unwrap(),
+            None => user_driver.create(test_uid.to_string()).unwrap(),
         }
     }
 
     pub fn test_user_by_connection(connection: &PgConnection) -> User {
         let user_driver = UserDriver::new(&connection);
+        let test_uid = "asdfghjkl";
 
-        let user_is_registered = user_driver.is_registered(9999).unwrap();
+        let user_is_registered = user_driver.check_user(test_uid.to_string()).unwrap();
         match user_is_registered {
             Some(user) => user,
-            None => user_driver.create(9999).unwrap(),
+            None => user_driver.create(test_uid.to_string()).unwrap(),
         }
     }
 }

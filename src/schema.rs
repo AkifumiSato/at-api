@@ -20,12 +20,12 @@ table! {
 table! {
     posts (id) {
         id -> Int4,
+        user_id -> Int4,
         title -> Varchar,
         body -> Text,
         published -> Bool,
         published_at -> Timestamp,
         created_at -> Timestamp,
-        user_id -> Int4,
     }
 }
 
@@ -39,15 +39,16 @@ table! {
 table! {
     tags (id) {
         id -> Int4,
+        user_id -> Int4,
         name -> Varchar,
         slug -> Varchar,
-        user_id -> Int4,
     }
 }
 
 table! {
     users (id) {
         id -> Int4,
+        uid -> Varchar,
     }
 }
 
