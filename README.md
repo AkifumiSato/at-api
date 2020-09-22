@@ -1,3 +1,7 @@
+# overview
+as = attendance + stamp
+This api is micro service in as.
+
 # develop env
 1. docker build
 ```shell script
