@@ -1,5 +1,5 @@
 use crate::database_utils::error::DataAccessError;
-use crate::domain::entity::action_record::ActionRecord;
+use crate::domain::entity::attendance_record::AttendanceRecord;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -11,10 +11,10 @@ pub struct InputData {
 }
 
 pub trait AddRecordUseCase {
-    fn add_record(&self, input: InputData) -> Result<ActionRecord, DataAccessError>;
+    fn add_record(&self, input: InputData) -> Result<AttendanceRecord, DataAccessError>;
 }
 
-pub fn execute<T>(data_access: T, input: InputData) -> Result<ActionRecord, DataAccessError>
+pub fn execute<T>(data_access: T, input: InputData) -> Result<AttendanceRecord, DataAccessError>
 where
     T: AddRecordUseCase,
 {

@@ -1,6 +1,6 @@
 use crate::database_utils::pool::DbPool;
-use crate::driver::action_records::ActionRecordDriver;
-use crate::usecase::action_records::record_add::{self, InputData};
+use crate::driver::attendance_records::ActionRecordDriver;
+use crate::usecase::attendance_records::record_add::{self, InputData};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 

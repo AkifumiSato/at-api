@@ -1,8 +1,8 @@
 use crate::database_utils::error::{DataAccessError, UseCase};
-use crate::domain::entity::action_record::{ActionRecord};
-use crate::schema::action_records;
-use crate::usecase::action_records::record_add;
-use crate::usecase::action_records::records_get::{GetRecordsUseCase, InputData};
+use crate::domain::entity::attendance_record::{AttendanceRecord};
+use crate::schema::attendance_records;
+use crate::usecase::attendance_records::record_add;
+use crate::usecase::attendance_records::records_get::{GetRecordsUseCase, InputData};
 use chrono::naive::serde::ts_seconds::{deserialize, serialize};
 use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
@@ -22,7 +22,7 @@ impl<'a> ActionRecordDriver<'a> {
 impl<'a> UseCase for ActionRecordDriver<'a> {}
 
 #[derive(Insertable)]
-#[table_name = "action_records"]
+#[table_name = "attendance_records"]
 struct NewRecord {
     user_id: i32,
     start_time: NaiveDateTime,
@@ -44,7 +44,7 @@ struct RecordItem {
 }
 
 impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
-    fn add_record(&self, input: record_add::InputData) -> Result<ActionRecord, DataAccessError> {
+    fn add_record(&self, input: record_add::InputData) -> Result<AttendanceRecord, DataAccessError> {
         let new_record = NewRecord {
             user_id: input.user_id,
             start_time: NaiveDateTime::from_timestamp(input.start_time, 0),
@@ -52,12 +52,12 @@ impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
             break_time: input.break_time,
         };
 
-        let record_result = diesel::insert_into(action_records::table)
+        let record_result = diesel::insert_into(attendance_records::table)
             .values(new_record)
             .get_result::<RecordItem>(self.connection)
             .or_else(|_| Err(DataAccessError::InternalError))?;
 
-        Ok(ActionRecord {
+        Ok(AttendanceRecord {
             id: record_result.id,
             user_id: record_result.user_id,
             start_time: record_result.start_time,
@@ -68,20 +68,20 @@ impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
 }
 
 impl<'a> GetRecordsUseCase for ActionRecordDriver<'a> {
-    fn get_records(&self, input: InputData) -> Result<Vec<ActionRecord>, DataAccessError> {
+    fn get_records(&self, input: InputData) -> Result<Vec<AttendanceRecord>, DataAccessError> {
         let offset = input.count * (input.page - 1);
 
-        let record_results: Vec<RecordItem> = action_records::dsl::action_records
-            .filter(action_records::dsl::user_id.eq(input.user_id))
+        let record_results: Vec<RecordItem> = attendance_records::dsl::attendance_records
+            .filter(attendance_records::dsl::user_id.eq(input.user_id))
             .limit(input.count as i64)
             .offset(offset as i64)
-            .order(action_records::dsl::id.desc())
+            .order(attendance_records::dsl::id.desc())
             .load::<RecordItem>(self.connection)
             .or_else(|_| Err(DataAccessError::InternalError))?;
 
         let results = record_results
             .iter()
-            .map(|result| ActionRecord {
+            .map(|result| AttendanceRecord {
                 user_id: result.user_id,
                 id: result.id,
                 start_time: result.start_time,

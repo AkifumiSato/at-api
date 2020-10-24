@@ -1,5 +1,5 @@
 table! {
-    action_records (id) {
+    attendance_records (id) {
         id -> Int4,
         user_id -> Int4,
         start_time -> Timestamp,
@@ -15,9 +15,9 @@ table! {
     }
 }
 
-joinable!(action_records -> users (user_id));
+joinable!(attendance_records -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
-    action_records,
+    attendance_records,
     users,
 );
