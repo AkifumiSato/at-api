@@ -7,7 +7,7 @@ pub struct InputData {
     pub user_id: i32,
     pub start_time: i64,
     pub end_time: i64,
-    pub info: Option<String>,
+    pub break_time: i32,
 }
 
 pub trait AddRecordUseCase {

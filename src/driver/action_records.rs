@@ -1,6 +1,5 @@
 use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::action_record::{ActionRecord};
-use crate::schema::action_categories;
 use crate::schema::action_records;
 use crate::usecase::action_records::record_add;
 use crate::usecase::action_records::records_get::{GetRecordsUseCase, InputData};
@@ -28,7 +27,7 @@ struct NewRecord {
     user_id: i32,
     start_time: NaiveDateTime,
     end_time: NaiveDateTime,
-    info: Option<String>,
+    break_time: i32,
 }
 
 #[derive(Debug, Queryable, Serialize, Deserialize)]
@@ -41,7 +40,7 @@ struct RecordItem {
     #[serde(serialize_with = "serialize")]
     #[serde(deserialize_with = "deserialize")]
     end_time: NaiveDateTime,
-    info: Option<String>,
+    break_time: i32,
 }
 
 impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
@@ -50,7 +49,7 @@ impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
             user_id: input.user_id,
             start_time: NaiveDateTime::from_timestamp(input.start_time, 0),
             end_time: NaiveDateTime::from_timestamp(input.end_time, 0),
-            info: input.info,
+            break_time: input.break_time,
         };
 
         let record_result = diesel::insert_into(action_records::table)
@@ -63,15 +62,9 @@ impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
             user_id: record_result.user_id,
             start_time: record_result.start_time,
             end_time: record_result.end_time,
-            info: record_result.info,
+            break_time: record_result.break_time,
         })
     }
-}
-
-#[derive(AsChangeset)]
-#[table_name = "action_categories"]
-pub struct UpdateCategory {
-    name: Option<String>,
 }
 
 impl<'a> GetRecordsUseCase for ActionRecordDriver<'a> {
@@ -93,7 +86,7 @@ impl<'a> GetRecordsUseCase for ActionRecordDriver<'a> {
                 id: result.id,
                 start_time: result.start_time,
                 end_time: result.end_time,
-                info: result.info.clone(),
+                break_time: result.break_time,
             })
             .collect();
 

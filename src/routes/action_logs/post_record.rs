@@ -9,7 +9,7 @@ pub struct PostParams {
     pub user_id: i32,
     pub start_time: i64,
     pub end_time: i64,
-    pub info: Option<String>,
+    pub break_time: i32,
 }
 
 impl PostParams {
@@ -18,7 +18,7 @@ impl PostParams {
             user_id: self.user_id,
             start_time: self.start_time,
             end_time: self.end_time,
-            info: self.info.clone(),
+            break_time: self.break_time,
         }
     }
 }

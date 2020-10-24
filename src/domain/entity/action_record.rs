@@ -12,5 +12,5 @@ pub struct ActionRecord {
     #[serde(serialize_with = "serialize")]
     #[serde(deserialize_with = "deserialize")]
     pub end_time: NaiveDateTime,
-    pub info: Option<String>,
+    pub break_time: i32,
 }
