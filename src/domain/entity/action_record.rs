@@ -13,12 +13,4 @@ pub struct ActionRecord {
     #[serde(deserialize_with = "deserialize")]
     pub end_time: NaiveDateTime,
     pub info: Option<String>,
-    pub category: Option<ActionCategory>,
-}
-
-#[derive(Debug, Queryable, Serialize, Deserialize, Clone)]
-pub struct ActionCategory {
-    pub id: i32,
-    pub user_id: i32,
-    pub name: String,
 }

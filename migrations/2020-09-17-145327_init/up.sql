@@ -14,6 +14,5 @@ CREATE TABLE action_records (
     user_id INTEGER NOT NULL REFERENCES users (id),
     start_time TIMESTAMP NOT NULL,
     end_time TIMESTAMP NOT NULL,
-    info VARCHAR(100),
-    category_id INTEGER REFERENCES action_categories (id)
+    info VARCHAR(100)
 );

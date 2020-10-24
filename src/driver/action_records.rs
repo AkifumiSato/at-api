@@ -1,5 +1,5 @@
 use crate::database_utils::error::{DataAccessError, UseCase};
-use crate::domain::entity::action_record::{ActionCategory, ActionRecord};
+use crate::domain::entity::action_record::{ActionRecord};
 use crate::schema::action_categories;
 use crate::schema::action_records;
 use crate::usecase::action_records::record_add;
@@ -29,7 +29,6 @@ struct NewRecord {
     start_time: NaiveDateTime,
     end_time: NaiveDateTime,
     info: Option<String>,
-    category_id: Option<i32>,
 }
 
 #[derive(Debug, Queryable, Serialize, Deserialize)]
@@ -43,7 +42,6 @@ struct RecordItem {
     #[serde(deserialize_with = "deserialize")]
     end_time: NaiveDateTime,
     info: Option<String>,
-    category_id: Option<i32>,
 }
 
 impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
@@ -53,7 +51,6 @@ impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
             start_time: NaiveDateTime::from_timestamp(input.start_time, 0),
             end_time: NaiveDateTime::from_timestamp(input.end_time, 0),
             info: input.info,
-            category_id: input.category_id,
         };
 
         let record_result = diesel::insert_into(action_records::table)
@@ -61,22 +58,12 @@ impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
             .get_result::<RecordItem>(self.connection)
             .or_else(|_| Err(DataAccessError::InternalError))?;
 
-        let category = match input.category_id {
-            Some(id) => action_categories::dsl::action_categories
-                .find(id)
-                .first::<ActionCategory>(self.connection)
-                .optional()
-                .or_else(|_| Err(DataAccessError::InternalError))?,
-            None => None,
-        };
-
         Ok(ActionRecord {
             id: record_result.id,
             user_id: record_result.user_id,
             start_time: record_result.start_time,
             end_time: record_result.end_time,
             info: record_result.info,
-            category,
         })
     }
 }
@@ -99,18 +86,6 @@ impl<'a> GetRecordsUseCase for ActionRecordDriver<'a> {
             .load::<RecordItem>(self.connection)
             .or_else(|_| Err(DataAccessError::InternalError))?;
 
-        let category_ids: Vec<i32> = record_results
-            .iter()
-            .map(|result| result.category_id)
-            .filter(|id| id.is_some())
-            .map(|id| id.unwrap())
-            .collect();
-
-        let categories: Vec<ActionCategory> = action_categories::dsl::action_categories
-            .filter(action_categories::dsl::id.eq_any(category_ids))
-            .load::<ActionCategory>(self.connection)
-            .or_else(|_| Err(DataAccessError::InternalError))?;
-
         let results = record_results
             .iter()
             .map(|result| ActionRecord {
@@ -119,14 +94,6 @@ impl<'a> GetRecordsUseCase for ActionRecordDriver<'a> {
                 start_time: result.start_time,
                 end_time: result.end_time,
                 info: result.info.clone(),
-                category: categories
-                    .iter()
-                    .filter(|category| match result.category_id {
-                        Some(category_id) => category.id.eq(&category_id),
-                        None => false,
-                    })
-                    .cloned()
-                    .next(),
             })
             .collect();
 

@@ -13,7 +13,6 @@ table! {
         start_time -> Timestamp,
         end_time -> Timestamp,
         info -> Nullable<Varchar>,
-        category_id -> Nullable<Int4>,
     }
 }
 
@@ -25,7 +24,6 @@ table! {
 }
 
 joinable!(action_categories -> users (user_id));
-joinable!(action_records -> action_categories (category_id));
 joinable!(action_records -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
