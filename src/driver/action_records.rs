@@ -2,8 +2,6 @@ use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::action_record::{ActionCategory, ActionRecord};
 use crate::schema::action_categories;
 use crate::schema::action_records;
-use crate::usecase::action_records::category_add::AddRecordCategoryUseCase;
-use crate::usecase::action_records::category_update::{self, UpdateRecordCategoryUseCase};
 use crate::usecase::action_records::record_add;
 use crate::usecase::action_records::records_get::{GetRecordsUseCase, InputData};
 use chrono::naive::serde::ts_seconds::{deserialize, serialize};
@@ -11,19 +9,6 @@ use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
-
-#[derive(Insertable)]
-#[table_name = "action_categories"]
-struct NewCategory<'a> {
-    user_id: i32,
-    name: &'a str,
-}
-
-impl<'a> NewCategory<'a> {
-    pub fn new(user_id: i32, name: &'a str) -> NewCategory<'a> {
-        NewCategory { user_id, name }
-    }
-}
 
 pub struct ActionRecordDriver<'a> {
     connection: &'a PgConnection,
@@ -36,16 +21,6 @@ impl<'a> ActionRecordDriver<'a> {
 }
 
 impl<'a> UseCase for ActionRecordDriver<'a> {}
-
-impl<'a> AddRecordCategoryUseCase for ActionRecordDriver<'a> {
-    fn add_category(&self, user_id: i32, name: String) -> Result<ActionCategory, DataAccessError> {
-        let result = diesel::insert_into(action_categories::table)
-            .values(NewCategory::new(user_id, &name))
-            .get_result::<ActionCategory>(self.connection);
-
-        self.parse_data_access_result(result)
-    }
-}
 
 #[derive(Insertable)]
 #[table_name = "action_records"]
@@ -110,32 +85,6 @@ impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
 #[table_name = "action_categories"]
 pub struct UpdateCategory {
     name: Option<String>,
-}
-
-impl<'a> UpdateRecordCategoryUseCase for ActionRecordDriver<'a> {
-    fn update_category(&self, input: category_update::InputData) -> Result<(), DataAccessError> {
-        let target_category = action_categories::dsl::action_categories
-            .filter(action_categories::dsl::user_id.eq(input.user_id))
-            .select(action_categories::id)
-            .first::<i32>(self.connection)
-            .optional()
-            .or_else(|_| Err(DataAccessError::InternalError))?;
-
-        if target_category.is_none() || target_category.unwrap() != input.id {
-            return Err(DataAccessError::InternalErrorWithMessage(
-                "User has not this category!".to_string(),
-            ));
-        }
-
-        let result = diesel::update(action_categories::dsl::action_categories.find(input.id))
-            .set(UpdateCategory { name: input.name })
-            .get_result::<ActionCategory>(self.connection);
-
-        match result {
-            Ok(_) => Ok(()),
-            Err(_) => Err(DataAccessError::InternalError),
-        }
-    }
 }
 
 impl<'a> GetRecordsUseCase for ActionRecordDriver<'a> {
