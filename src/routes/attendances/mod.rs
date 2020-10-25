@@ -1,6 +1,7 @@
 mod get;
 mod patch;
 mod post_record;
+mod delete;
 
 use actix_web::web;
 
@@ -9,6 +10,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         web::scope("/")
             .route("", web::get().to(get::route))
             .route("", web::post().to(post_record::route))
+            .route("", web::delete().to(delete::route))
             .route("", web::patch().to(patch::route)),
     );
 }
@@ -24,7 +26,7 @@ mod tests {
     use chrono::{Duration, Local, NaiveDateTime};
 
     #[actix_rt::test]
-    async fn attendance_status_test() {
+    async fn attendance_get_post_status_test() {
         let pool = setup_connection_pool();
 
         let mut app = test::init_service(
@@ -134,5 +136,22 @@ mod tests {
             NaiveDateTime::from_timestamp(end_time2_date.timestamp(), 0)
         );
         assert_eq!(resp_record.break_time, break_time2);
+
+        // delete
+        let req = test::TestRequest::delete()
+            .uri("/")
+            .set_json(&delete::JsonBody {
+                uid: test_user.uid.clone(),
+                id: resp_record.id,
+            })
+            .to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.status().as_u16(), 204);
+
+        let req = test::TestRequest::get()
+            .uri(&format!("/?uid={}", test_user.uid))
+            .to_request();
+        let resp_records: Vec<AttendanceRecord> = test::read_response_json(&mut app, req).await;
+        assert!(resp_records.is_empty());
     }
 }
