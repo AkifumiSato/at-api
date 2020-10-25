@@ -4,6 +4,7 @@ use crate::schema::users;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
+// noinspection DuplicatedCode
 pub fn get_user(connection: &PgConnection, uid: String) -> Result<Option<User>, DataAccessError> {
     users::dsl::users
         .filter(users::dsl::uid.eq(uid.clone()))
@@ -12,6 +13,7 @@ pub fn get_user(connection: &PgConnection, uid: String) -> Result<Option<User>, 
         .or_else(|_| Err(DataAccessError::InternalError))
 }
 
+// noinspection DuplicatedCode
 pub fn get_registered_user(
     connection: &PgConnection,
     uid: String,
@@ -28,5 +30,38 @@ pub fn get_registered_user(
         ));
     } else {
         Ok(target_user.unwrap())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::database_utils::pool::test_util;
+    use crate::driver::users::test_utils::test_user_by_connection;
+
+    #[test]
+    fn get_user_test() {
+        let connection = test_util::connection_init();
+
+        assert!(get_user(&connection, "asdfg".to_string())
+            .unwrap()
+            .is_none());
+
+        let test_user = test_user_by_connection(&connection);
+        let get_user = get_user(&connection, test_user.uid.clone())
+            .unwrap()
+            .unwrap();
+        assert_eq!(get_user.uid, test_user.uid.clone());
+    }
+
+    #[test]
+    fn get_registered_user_test() {
+        let connection = test_util::connection_init();
+
+        assert!(get_registered_user(&connection, "asdfg".to_string()).is_err());
+
+        let test_user = test_user_by_connection(&connection);
+        let get_user = get_registered_user(&connection, test_user.uid.clone()).unwrap();
+        assert_eq!(get_user.uid, test_user.uid.clone());
     }
 }

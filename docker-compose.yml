@@ -17,6 +17,7 @@ services:
       - cargo-cache:/usr/local/cargo/registry
       - target-cache:/app/target
     command: bash -c "diesel setup && cargo watch -x run"
+    tty: true
   db:
     build:
       context: .

@@ -1,37 +1,35 @@
 use crate::database_utils::pool::DbPool;
-use crate::driver::action_records::ActionRecordDriver;
-use crate::usecase::action_records::record_add::{self, InputData};
+use crate::driver::attendance_records::AttendanceRecordDriver;
+use crate::usecase::attendance_records::add::{self, InputData};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PostParams {
-    pub user_id: i32,
+    pub uid: String,
     pub start_time: i64,
     pub end_time: i64,
-    pub info: Option<String>,
-    pub category_id: Option<i32>,
+    pub break_time: i32,
 }
 
 impl PostParams {
     pub fn to_input_data(&self) -> InputData {
         InputData {
-            user_id: self.user_id,
+            uid: self.uid.clone(),
             start_time: self.start_time,
             end_time: self.end_time,
-            info: self.info.clone(),
-            category_id: self.category_id,
+            break_time: self.break_time,
         }
     }
 }
 
-pub async fn index(pool: web::Data<DbPool>, item: web::Json<PostParams>) -> HttpResponse {
+pub async fn route(pool: web::Data<DbPool>, item: web::Json<PostParams>) -> HttpResponse {
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let action_driver = ActionRecordDriver::new(&connection);
+    let attendance_driver = AttendanceRecordDriver::new(&connection);
 
-    match record_add::execute(action_driver, item.to_input_data()) {
+    match add::execute(attendance_driver, item.to_input_data()) {
         Ok(category) => HttpResponse::Created().json(category),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

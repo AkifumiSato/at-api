@@ -3,18 +3,17 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
-    pub user_id: i32,
+    pub uid: String,
     pub id: i32,
-    pub name: Option<String>,
 }
 
-pub trait UpdateRecordCategoryUseCase {
-    fn update_category(&self, input: InputData) -> Result<(), DataAccessError>;
+pub trait DeleteRecordUseCase {
+    fn delete_record(&self, input: InputData) -> Result<(), DataAccessError>;
 }
 
 pub fn execute<T>(data_access: T, input: InputData) -> Result<(), DataAccessError>
 where
-    T: UpdateRecordCategoryUseCase,
+    T: DeleteRecordUseCase,
 {
-    data_access.update_category(input)
+    data_access.delete_record(input)
 }

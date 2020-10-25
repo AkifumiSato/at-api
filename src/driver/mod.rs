@@ -1,3 +1,3 @@
-pub mod action_records;
+pub mod attendance_records;
 pub mod common;
 pub mod users;

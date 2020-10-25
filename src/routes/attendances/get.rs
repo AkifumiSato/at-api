@@ -1,12 +1,12 @@
 use crate::database_utils::pool::DbPool;
-use crate::driver::action_records::ActionRecordDriver;
-use crate::usecase::action_records::records_get::{self, InputData};
+use crate::driver::attendance_records::AttendanceRecordDriver;
+use crate::usecase::attendance_records::search_by_user::{self, InputData};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetParams {
-    pub user_id: i32,
+    pub uid: String,
     pub page: Option<i32>,
     pub count: Option<i32>,
 }
@@ -17,21 +17,21 @@ impl GetParams {
         let count = self.count.unwrap_or_else(|| 10);
 
         InputData {
-            user_id: self.user_id,
+            uid: self.uid.clone(),
             page,
             count,
         }
     }
 }
 
-pub async fn index(pool: web::Data<DbPool>, item: web::Query<GetParams>) -> HttpResponse {
+pub async fn route(pool: web::Data<DbPool>, item: web::Query<GetParams>) -> HttpResponse {
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let action_driver = ActionRecordDriver::new(&connection);
+    let attendance_driver = AttendanceRecordDriver::new(&connection);
 
-    match records_get::execute(action_driver, item.to_input_data()) {
-        Ok(action_records) => HttpResponse::Created().json(action_records),
+    match search_by_user::execute(attendance_driver, item.to_input_data()) {
+        Ok(records) => HttpResponse::Ok().json(records),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
 }
