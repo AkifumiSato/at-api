@@ -23,7 +23,7 @@ impl PostParams {
     }
 }
 
-pub async fn index(pool: web::Data<DbPool>, item: web::Json<PostParams>) -> HttpResponse {
+pub async fn route(pool: web::Data<DbPool>, item: web::Json<PostParams>) -> HttpResponse {
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
