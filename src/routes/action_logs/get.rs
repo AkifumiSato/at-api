@@ -31,7 +31,7 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Query<GetParams>) -> Http
     let action_driver = AttendanceRecordDriver::new(&connection);
 
     match records_get::execute(action_driver, item.to_input_data()) {
-        Ok(action_records) => HttpResponse::Created().json(action_records),
+        Ok(action_records) => HttpResponse::Ok().json(action_records),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
 }
