@@ -2,7 +2,7 @@ use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::attendance_record::AttendanceRecord;
 use crate::driver::common::get_registered_user;
 use crate::schema::attendance_records;
-use crate::usecase::attendance_records::{add, search_by_user, update, delete};
+use crate::usecase::attendance_records::{add, delete, search_by_user, update};
 use chrono::naive::serde::ts_seconds::{deserialize, serialize};
 use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
@@ -174,10 +174,10 @@ mod test {
     use crate::database_utils::pool::test_util;
     use crate::driver::users::test_utils::test_user_by_connection;
     use crate::usecase::attendance_records::add::{self, AddRecordUseCase};
+    use crate::usecase::attendance_records::delete::DeleteRecordUseCase;
     use crate::usecase::attendance_records::search_by_user::SearchRecordsByUserUseCase;
     use crate::usecase::attendance_records::update::UpdateRecordUseCase;
     use chrono::{Duration, Local};
-    use crate::usecase::attendance_records::delete::DeleteRecordUseCase;
 
     /// # scenario
     ///
@@ -284,11 +284,10 @@ mod test {
         assert_eq!(record_by_user.break_time, break_time2);
 
         // delete
-        let _result = attendance_driver
-            .delete_record(delete::InputData {
-                id: record_by_user.id,
-                uid: test_user.uid.clone(),
-            });
+        let _result = attendance_driver.delete_record(delete::InputData {
+            id: record_by_user.id,
+            uid: test_user.uid.clone(),
+        });
         let records_by_user = attendance_driver
             .get_records(search_by_user::InputData {
                 uid: get_registered_user(&attendance_driver.connection, test_user.uid.clone())

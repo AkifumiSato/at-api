@@ -1,6 +1,6 @@
 mod get;
-mod post_record;
 mod patch;
+mod post_record;
 
 use actix_web::web;
 
@@ -18,10 +18,10 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 mod tests {
     use super::*;
     use crate::database_utils::pool::test_util::setup_connection_pool;
+    use crate::domain::entity::attendance_record::AttendanceRecord;
     use crate::driver::users::test_utils::test_user_by_pool;
     use actix_web::{test, web, App};
     use chrono::{Duration, Local, NaiveDateTime};
-    use crate::domain::entity::attendance_record::AttendanceRecord;
 
     #[actix_rt::test]
     async fn attendance_status_test() {
@@ -125,8 +125,14 @@ mod tests {
         let resp_records: Vec<AttendanceRecord> = test::read_response_json(&mut app, req).await;
         assert!(!resp_records.is_empty());
         let resp_record = resp_records.first().unwrap();
-        assert_eq!(resp_record.start_time, NaiveDateTime::from_timestamp(start_time2_date.timestamp(), 0));
-        assert_eq!(resp_record.end_time, NaiveDateTime::from_timestamp(end_time2_date.timestamp(), 0));
+        assert_eq!(
+            resp_record.start_time,
+            NaiveDateTime::from_timestamp(start_time2_date.timestamp(), 0)
+        );
+        assert_eq!(
+            resp_record.end_time,
+            NaiveDateTime::from_timestamp(end_time2_date.timestamp(), 0)
+        );
         assert_eq!(resp_record.break_time, break_time2);
     }
 }
