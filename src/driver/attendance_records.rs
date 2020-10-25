@@ -2,8 +2,7 @@ use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::attendance_record::AttendanceRecord;
 use crate::driver::common::get_registered_user;
 use crate::schema::attendance_records;
-use crate::usecase::attendance_records::update::InputData;
-use crate::usecase::attendance_records::{add, search_by_user, update};
+use crate::usecase::attendance_records::{add, search_by_user, update, delete};
 use chrono::naive::serde::ts_seconds::{deserialize, serialize};
 use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
@@ -123,7 +122,7 @@ impl<'a> search_by_user::SearchRecordsByUserUseCase for AttendanceRecordDriver<'
 }
 
 impl<'a> update::UpdateRecordUseCase for AttendanceRecordDriver<'a> {
-    fn update_record(&self, input: InputData) -> Result<(), DataAccessError> {
+    fn update_record(&self, input: update::InputData) -> Result<(), DataAccessError> {
         let user = get_registered_user(self.connection, input.uid.clone())?;
         let record = attendance_records::dsl::attendance_records
             .find(input.id)
@@ -148,6 +147,26 @@ impl<'a> update::UpdateRecordUseCase for AttendanceRecordDriver<'a> {
     }
 }
 
+impl<'a> delete::DeleteRecordUseCase for AttendanceRecordDriver<'a> {
+    fn delete_record(&self, input: delete::InputData) -> Result<(), DataAccessError> {
+        let user = get_registered_user(self.connection, input.uid.clone())?;
+        let record = attendance_records::dsl::attendance_records
+            .find(input.id)
+            .first::<RecordItem>(self.connection)
+            .or_else(|_| Err(DataAccessError::InternalError))?;
+        if record.user_id != user.id {
+            return Err(DataAccessError::InternalError);
+        }
+
+        let result = diesel::delete(attendance_records::dsl::attendance_records.find(input.id))
+            .execute(self.connection);
+        match result {
+            Ok(_) => Ok(()),
+            Err(_) => Err(DataAccessError::InternalError),
+        }
+    }
+}
+
 // noinspection DuplicatedCode
 #[cfg(test)]
 mod test {
@@ -158,6 +177,7 @@ mod test {
     use crate::usecase::attendance_records::search_by_user::SearchRecordsByUserUseCase;
     use crate::usecase::attendance_records::update::UpdateRecordUseCase;
     use chrono::{Duration, Local};
+    use crate::usecase::attendance_records::delete::DeleteRecordUseCase;
 
     /// # scenario
     ///
@@ -166,6 +186,8 @@ mod test {
     /// - update
     /// - get
     /// - not update
+    /// - get
+    /// - delete
     /// - get
     #[test]
     fn attendance_driver_scenario() {
@@ -197,7 +219,7 @@ mod test {
                     .unwrap()
                     .uid,
                 page: 1,
-                count: 1,
+                count: 10,
             })
             .unwrap();
         assert_eq!(records_by_user.len(), 1);
@@ -227,7 +249,7 @@ mod test {
                     .unwrap()
                     .uid,
                 page: 1,
-                count: 1,
+                count: 10,
             })
             .unwrap();
         assert_eq!(records_by_user.len(), 1);
@@ -246,14 +268,13 @@ mod test {
             break_time: None,
         });
 
-        // noinspection Duplicated code
         let records_by_user = attendance_driver
             .get_records(search_by_user::InputData {
                 uid: get_registered_user(&attendance_driver.connection, test_user.uid.clone())
                     .unwrap()
                     .uid,
                 page: 1,
-                count: 1,
+                count: 10,
             })
             .unwrap();
         assert_eq!(records_by_user.len(), 1);
@@ -261,5 +282,22 @@ mod test {
         assert_eq!(record_by_user.start_time, start_time2_naive);
         assert_eq!(record_by_user.end_time, end_time2_naive);
         assert_eq!(record_by_user.break_time, break_time2);
+
+        // delete
+        let _result = attendance_driver
+            .delete_record(delete::InputData {
+                id: record_by_user.id,
+                uid: test_user.uid.clone(),
+            });
+        let records_by_user = attendance_driver
+            .get_records(search_by_user::InputData {
+                uid: get_registered_user(&attendance_driver.connection, test_user.uid.clone())
+                    .unwrap()
+                    .uid,
+                page: 1,
+                count: 10,
+            })
+            .unwrap();
+        assert!(records_by_user.is_empty());
     }
 }
