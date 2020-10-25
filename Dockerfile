@@ -15,6 +15,6 @@ RUN cargo build --release
 
 # production
 FROM rust:1.44.1-slim-stretch
-COPY --from=build-stage /app/target/release/api .
+COPY --from=build-stage /app/target/release/my_app .
 EXPOSE 8088
-CMD ["/usr/local/bin/api"]
+CMD ["/usr/local/bin/my_app"]
