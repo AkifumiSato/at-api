@@ -8,6 +8,7 @@ use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use crate::driver::common::{get_registered_user};
 
 pub struct AttendanceRecordDriver<'a> {
     connection: &'a PgConnection,
@@ -76,9 +77,10 @@ impl<'a> record_add::AddRecordUseCase for AttendanceRecordDriver<'a> {
 impl<'a> records_get::GetRecordsUseCase for AttendanceRecordDriver<'a> {
     fn get_records(&self, input: records_get::InputData) -> Result<Vec<AttendanceRecord>, DataAccessError> {
         let offset = input.count * (input.page - 1);
+        let user_id = get_registered_user(&self.connection, input.uid.clone())?;
 
         let record_results: Vec<RecordItem> = attendance_records::dsl::attendance_records
-            .filter(attendance_records::dsl::user_id.eq(input.user_id))
+            .filter(attendance_records::dsl::user_id.eq(user_id.id))
             .limit(input.count as i64)
             .offset(offset as i64)
             .order(attendance_records::dsl::id.desc())
@@ -130,7 +132,7 @@ mod test {
         assert_eq!(added_record.break_time, break_time);
 
         let records_by_user = attendance_driver.get_records(records_get::InputData {
-            user_id: test_uid.id,
+            uid: get_registered_user(&attendance_driver.connection, test_uid.uid.clone()).unwrap().uid,
             page: 1,
             count: 1,
         }).unwrap();

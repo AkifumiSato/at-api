@@ -33,7 +33,7 @@ mod tests {
         let test_user = test_user_by_pool(pool.clone());
 
         let req = test::TestRequest::get()
-            .uri(&format!("/?user_id={}", test_user.id))
+            .uri(&format!("/?uid={}", test_user.uid))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert_eq!(resp.status().as_u16(), 200);
@@ -55,7 +55,7 @@ mod tests {
         assert_eq!(resp.status().as_u16(), 201);
 
         let req = test::TestRequest::get()
-            .uri(&format!("/?user_id={}", test_user.id))
+            .uri(&format!("/?uid={}", test_user.uid))
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert_eq!(resp.status().as_u16(), 200);
