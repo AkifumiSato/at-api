@@ -45,7 +45,7 @@ mod tests {
         let req = test::TestRequest::post()
             .uri("/")
             .set_json(&post_record::PostParams {
-                user_id: test_user.id,
+                uid: test_user.uid.clone(),
                 start_time: start_time_date.timestamp(),
                 end_time: end_time_date.timestamp(),
                 break_time,

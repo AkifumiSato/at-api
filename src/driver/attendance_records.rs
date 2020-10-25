@@ -58,8 +58,10 @@ impl RecordItem {
 
 impl<'a> record_add::AddRecordUseCase for AttendanceRecordDriver<'a> {
     fn add_record(&self, input: record_add::InputData) -> Result<AttendanceRecord, DataAccessError> {
+        let user = get_registered_user(self.connection, input.uid)
+            .or_else(|_| Err(DataAccessError::InternalError))?;
         let new_record = NewRecord {
-            user_id: input.user_id,
+            user_id: user.id,
             start_time: NaiveDateTime::from_timestamp(input.start_time, 0),
             end_time: NaiveDateTime::from_timestamp(input.end_time, 0),
             break_time: input.break_time,
@@ -121,7 +123,7 @@ mod test {
         let break_time = 60 * 60 * 1000;
 
         let added_record = attendance_driver.add_record(record_add::InputData {
-            user_id: test_uid.id,
+            uid: test_uid.uid.clone(),
             start_time: start_time.timestamp(),
             end_time: end_time.timestamp(),
             break_time,

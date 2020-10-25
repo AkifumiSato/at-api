@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PostParams {
-    pub user_id: i32,
+    pub uid: String,
     pub start_time: i64,
     pub end_time: i64,
     pub break_time: i32,
@@ -15,7 +15,7 @@ pub struct PostParams {
 impl PostParams {
     pub fn to_input_data(&self) -> InputData {
         InputData {
-            user_id: self.user_id,
+            uid: self.uid.clone(),
             start_time: self.start_time,
             end_time: self.end_time,
             break_time: self.break_time,

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InputData {
-    pub user_id: i32,
+    pub uid: String,
     pub start_time: i64,
     pub end_time: i64,
     pub break_time: i32,
