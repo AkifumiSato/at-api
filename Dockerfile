@@ -16,6 +16,5 @@ RUN cargo build --release
 # production
 FROM rust:1.44.1-slim-stretch
 COPY --from=build-stage /app/target/release/my_app /api
-RUN diesel setup
 EXPOSE 8088
-CMD ["/api/my_app"]
+CMD ["diesel setup", "&&", "/api/my_app"]
