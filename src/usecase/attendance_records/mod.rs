@@ -1,2 +1,2 @@
-pub mod record_add;
-pub mod records_get;
+pub mod add;
+pub mod search_by_user;

@@ -17,7 +17,4 @@ table! {
 
 joinable!(attendance_records -> users (user_id));
 
-allow_tables_to_appear_in_same_query!(
-    attendance_records,
-    users,
-);
+allow_tables_to_appear_in_same_query!(attendance_records, users,);

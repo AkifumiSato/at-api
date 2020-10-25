@@ -13,7 +13,10 @@ pub trait GetRecordsUseCase {
     fn get_records(&self, input: InputData) -> Result<Vec<AttendanceRecord>, DataAccessError>;
 }
 
-pub fn execute<T>(data_access: T, input: InputData) -> Result<Vec<AttendanceRecord>, DataAccessError>
+pub fn execute<T>(
+    data_access: T,
+    input: InputData,
+) -> Result<Vec<AttendanceRecord>, DataAccessError>
 where
     T: GetRecordsUseCase,
 {

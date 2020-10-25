@@ -41,10 +41,14 @@ mod test {
     fn get_user_test() {
         let connection = test_util::connection_init();
 
-        assert!(get_user(&connection, "asdfg".to_string()).unwrap().is_none());
+        assert!(get_user(&connection, "asdfg".to_string())
+            .unwrap()
+            .is_none());
 
         let test_user = test_user_by_connection(&connection);
-        let get_user = get_user(&connection, test_user.uid.clone()).unwrap().unwrap();
+        let get_user = get_user(&connection, test_user.uid.clone())
+            .unwrap()
+            .unwrap();
         assert_eq!(get_user.uid, test_user.uid.clone());
     }
 

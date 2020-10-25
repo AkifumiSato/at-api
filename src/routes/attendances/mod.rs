@@ -7,7 +7,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/")
             .route("", web::get().to(get::index))
-            .route("", web::post().to(post_record::index))
+            .route("", web::post().to(post_record::index)),
     );
 }
 
@@ -15,9 +15,9 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 mod tests {
     use super::*;
     use crate::database_utils::pool::test_util::setup_connection_pool;
-    use actix_web::{test, web, App};
     use crate::driver::users::test_utils::test_user_by_pool;
-    use chrono::{Local, Duration};
+    use actix_web::{test, web, App};
+    use chrono::{Duration, Local};
 
     #[actix_rt::test]
     async fn attendance_scenario() {
@@ -28,7 +28,7 @@ mod tests {
                 .data(pool.clone())
                 .service(web::scope("").configure(config)),
         )
-            .await;
+        .await;
 
         let test_user = test_user_by_pool(pool.clone());
 

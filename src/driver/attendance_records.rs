@@ -1,14 +1,14 @@
 use crate::database_utils::error::{DataAccessError, UseCase};
-use crate::domain::entity::attendance_record::{AttendanceRecord};
+use crate::domain::entity::attendance_record::AttendanceRecord;
+use crate::driver::common::get_registered_user;
 use crate::schema::attendance_records;
-use crate::usecase::attendance_records::record_add;
-use crate::usecase::attendance_records::records_get;
+use crate::usecase::attendance_records::add;
+use crate::usecase::attendance_records::search_by_user;
 use chrono::naive::serde::ts_seconds::{deserialize, serialize};
 use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
-use crate::driver::common::{get_registered_user};
 
 pub struct AttendanceRecordDriver<'a> {
     connection: &'a PgConnection,
@@ -56,8 +56,8 @@ impl RecordItem {
     }
 }
 
-impl<'a> record_add::AddRecordUseCase for AttendanceRecordDriver<'a> {
-    fn add_record(&self, input: record_add::InputData) -> Result<AttendanceRecord, DataAccessError> {
+impl<'a> add::AddRecordUseCase for AttendanceRecordDriver<'a> {
+    fn add_record(&self, input: add::InputData) -> Result<AttendanceRecord, DataAccessError> {
         let user = get_registered_user(self.connection, input.uid)
             .or_else(|_| Err(DataAccessError::InternalError))?;
         let new_record = NewRecord {
@@ -76,8 +76,11 @@ impl<'a> record_add::AddRecordUseCase for AttendanceRecordDriver<'a> {
     }
 }
 
-impl<'a> records_get::GetRecordsUseCase for AttendanceRecordDriver<'a> {
-    fn get_records(&self, input: records_get::InputData) -> Result<Vec<AttendanceRecord>, DataAccessError> {
+impl<'a> search_by_user::GetRecordsUseCase for AttendanceRecordDriver<'a> {
+    fn get_records(
+        &self,
+        input: search_by_user::InputData,
+    ) -> Result<Vec<AttendanceRecord>, DataAccessError> {
         let offset = input.count * (input.page - 1);
         let user_id = get_registered_user(&self.connection, input.uid.clone())?;
 
@@ -101,11 +104,11 @@ impl<'a> records_get::GetRecordsUseCase for AttendanceRecordDriver<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use chrono::{Local, Duration};
     use crate::database_utils::pool::test_util;
-    use crate::usecase::attendance_records::record_add::{self, AddRecordUseCase};
     use crate::driver::users::test_utils::test_user_by_connection;
-    use crate::usecase::attendance_records::records_get::GetRecordsUseCase;
+    use crate::usecase::attendance_records::add::{self, AddRecordUseCase};
+    use crate::usecase::attendance_records::search_by_user::GetRecordsUseCase;
+    use chrono::{Duration, Local};
 
     /// # scenario
     ///
@@ -122,22 +125,28 @@ mod test {
         let start_time_naive = NaiveDateTime::from_timestamp(start_time.timestamp(), 0);
         let break_time = 60 * 60 * 1000;
 
-        let added_record = attendance_driver.add_record(record_add::InputData {
-            uid: test_uid.uid.clone(),
-            start_time: start_time.timestamp(),
-            end_time: end_time.timestamp(),
-            break_time,
-        }).unwrap();
+        let added_record = attendance_driver
+            .add_record(add::InputData {
+                uid: test_uid.uid.clone(),
+                start_time: start_time.timestamp(),
+                end_time: end_time.timestamp(),
+                break_time,
+            })
+            .unwrap();
         assert_eq!(added_record.user_id, test_uid.id);
         assert_eq!(added_record.start_time, start_time_naive);
         assert_eq!(added_record.end_time, end_time_naive);
         assert_eq!(added_record.break_time, break_time);
 
-        let records_by_user = attendance_driver.get_records(records_get::InputData {
-            uid: get_registered_user(&attendance_driver.connection, test_uid.uid.clone()).unwrap().uid,
-            page: 1,
-            count: 1,
-        }).unwrap();
+        let records_by_user = attendance_driver
+            .get_records(search_by_user::InputData {
+                uid: get_registered_user(&attendance_driver.connection, test_uid.uid.clone())
+                    .unwrap()
+                    .uid,
+                page: 1,
+                count: 1,
+            })
+            .unwrap();
         assert_eq!(records_by_user.len(), 1);
         let record_by_user = records_by_user.first().unwrap();
         assert_eq!(record_by_user.user_id, test_uid.id);
