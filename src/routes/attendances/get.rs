@@ -28,10 +28,10 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Query<GetParams>) -> Http
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let action_driver = AttendanceRecordDriver::new(&connection);
+    let attendance_driver = AttendanceRecordDriver::new(&connection);
 
-    match records_get::execute(action_driver, item.to_input_data()) {
-        Ok(action_records) => HttpResponse::Ok().json(action_records),
+    match records_get::execute(attendance_driver, item.to_input_data()) {
+        Ok(records) => HttpResponse::Ok().json(records),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
 }

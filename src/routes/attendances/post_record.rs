@@ -27,9 +27,9 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Json<PostParams>) -> Http
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let action_driver = AttendanceRecordDriver::new(&connection);
+    let attendance_driver = AttendanceRecordDriver::new(&connection);
 
-    match record_add::execute(action_driver, item.to_input_data()) {
+    match record_add::execute(attendance_driver, item.to_input_data()) {
         Ok(category) => HttpResponse::Created().json(category),
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }

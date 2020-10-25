@@ -1,2 +1,2 @@
-pub mod action_logs;
+pub mod attendances;
 pub mod users;

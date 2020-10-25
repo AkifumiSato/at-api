@@ -54,7 +54,7 @@ async fn main() -> std::io::Result<()> {
             )
             .data(web::JsonConfig::default().limit(4096))
             .service(web::scope("/users").configure(routes::users::config))
-            .service(web::scope("/attendance_records").configure(routes::action_logs::config))
+            .service(web::scope("/attendance_records").configure(routes::attendances::config))
     })
     .bind(&bind)?
     .run()
