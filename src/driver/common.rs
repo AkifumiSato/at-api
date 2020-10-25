@@ -4,6 +4,7 @@ use crate::schema::users;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
+// noinspection DuplicatedCode
 pub fn get_user(connection: &PgConnection, uid: String) -> Result<Option<User>, DataAccessError> {
     users::dsl::users
         .filter(users::dsl::uid.eq(uid.clone()))
@@ -12,6 +13,7 @@ pub fn get_user(connection: &PgConnection, uid: String) -> Result<Option<User>, 
         .or_else(|_| Err(DataAccessError::InternalError))
 }
 
+// noinspection DuplicatedCode
 pub fn get_registered_user(
     connection: &PgConnection,
     uid: String,
