@@ -76,7 +76,7 @@ impl<'a> add::AddRecordUseCase for AttendanceRecordDriver<'a> {
     }
 }
 
-impl<'a> search_by_user::GetRecordsUseCase for AttendanceRecordDriver<'a> {
+impl<'a> search_by_user::SearchRecordsByUserUseCase for AttendanceRecordDriver<'a> {
     fn get_records(
         &self,
         input: search_by_user::InputData,
@@ -107,7 +107,7 @@ mod test {
     use crate::database_utils::pool::test_util;
     use crate::driver::users::test_utils::test_user_by_connection;
     use crate::usecase::attendance_records::add::{self, AddRecordUseCase};
-    use crate::usecase::attendance_records::search_by_user::GetRecordsUseCase;
+    use crate::usecase::attendance_records::search_by_user::SearchRecordsByUserUseCase;
     use chrono::{Duration, Local};
 
     /// # scenario

@@ -9,7 +9,7 @@ pub struct InputData {
     pub count: i32,
 }
 
-pub trait GetRecordsUseCase {
+pub trait SearchRecordsByUserUseCase {
     fn get_records(&self, input: InputData) -> Result<Vec<AttendanceRecord>, DataAccessError>;
 }
 
@@ -18,7 +18,7 @@ pub fn execute<T>(
     input: InputData,
 ) -> Result<Vec<AttendanceRecord>, DataAccessError>
 where
-    T: GetRecordsUseCase,
+    T: SearchRecordsByUserUseCase,
 {
     data_access.get_records(input)
 }
