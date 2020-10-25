@@ -2,24 +2,24 @@ use crate::database_utils::error::{DataAccessError, UseCase};
 use crate::domain::entity::attendance_record::{AttendanceRecord};
 use crate::schema::attendance_records;
 use crate::usecase::attendance_records::record_add;
-use crate::usecase::attendance_records::records_get::{GetRecordsUseCase, InputData};
+use crate::usecase::attendance_records::records_get;
 use chrono::naive::serde::ts_seconds::{deserialize, serialize};
 use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-pub struct ActionRecordDriver<'a> {
+pub struct AttendanceRecordDriver<'a> {
     connection: &'a PgConnection,
 }
 
-impl<'a> ActionRecordDriver<'a> {
-    pub fn new(connection: &'a PgConnection) -> ActionRecordDriver<'a> {
-        ActionRecordDriver { connection }
+impl<'a> AttendanceRecordDriver<'a> {
+    pub fn new(connection: &'a PgConnection) -> AttendanceRecordDriver<'a> {
+        AttendanceRecordDriver { connection }
     }
 }
 
-impl<'a> UseCase for ActionRecordDriver<'a> {}
+impl<'a> UseCase for AttendanceRecordDriver<'a> {}
 
 #[derive(Insertable)]
 #[table_name = "attendance_records"]
@@ -43,7 +43,19 @@ struct RecordItem {
     break_time: i32,
 }
 
-impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
+impl RecordItem {
+    fn to_entity(&self) -> AttendanceRecord {
+        AttendanceRecord {
+            id: self.id,
+            user_id: self.user_id,
+            start_time: self.start_time,
+            end_time: self.end_time,
+            break_time: self.break_time,
+        }
+    }
+}
+
+impl<'a> record_add::AddRecordUseCase for AttendanceRecordDriver<'a> {
     fn add_record(&self, input: record_add::InputData) -> Result<AttendanceRecord, DataAccessError> {
         let new_record = NewRecord {
             user_id: input.user_id,
@@ -57,18 +69,12 @@ impl<'a> record_add::AddRecordUseCase for ActionRecordDriver<'a> {
             .get_result::<RecordItem>(self.connection)
             .or_else(|_| Err(DataAccessError::InternalError))?;
 
-        Ok(AttendanceRecord {
-            id: record_result.id,
-            user_id: record_result.user_id,
-            start_time: record_result.start_time,
-            end_time: record_result.end_time,
-            break_time: record_result.break_time,
-        })
+        Ok(record_result.to_entity())
     }
 }
 
-impl<'a> GetRecordsUseCase for ActionRecordDriver<'a> {
-    fn get_records(&self, input: InputData) -> Result<Vec<AttendanceRecord>, DataAccessError> {
+impl<'a> records_get::GetRecordsUseCase for AttendanceRecordDriver<'a> {
+    fn get_records(&self, input: records_get::InputData) -> Result<Vec<AttendanceRecord>, DataAccessError> {
         let offset = input.count * (input.page - 1);
 
         let record_results: Vec<RecordItem> = attendance_records::dsl::attendance_records
@@ -81,15 +87,58 @@ impl<'a> GetRecordsUseCase for ActionRecordDriver<'a> {
 
         let results = record_results
             .iter()
-            .map(|result| AttendanceRecord {
-                user_id: result.user_id,
-                id: result.id,
-                start_time: result.start_time,
-                end_time: result.end_time,
-                break_time: result.break_time,
-            })
+            .map(|result| result.to_entity())
             .collect();
 
         Ok(results)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use chrono::{Local, Duration};
+    use crate::database_utils::pool::test_util;
+    use crate::usecase::attendance_records::record_add::{self, AddRecordUseCase};
+    use crate::driver::users::test_utils::test_user_by_connection;
+    use crate::usecase::attendance_records::records_get::GetRecordsUseCase;
+
+    /// # scenario
+    ///
+    /// 1. create
+    /// 2. get
+    #[test]
+    fn attendance_driver_scenario() {
+        let connection = test_util::connection_init();
+        let attendance_driver = AttendanceRecordDriver::new(&connection);
+        let test_uid = test_user_by_connection(&connection);
+        let end_time = Local::now();
+        let end_time_naive = NaiveDateTime::from_timestamp(end_time.timestamp(), 0);
+        let start_time = end_time - Duration::hours(8);
+        let start_time_naive = NaiveDateTime::from_timestamp(start_time.timestamp(), 0);
+        let break_time = 60 * 60 * 1000;
+
+        let added_record = attendance_driver.add_record(record_add::InputData {
+            user_id: test_uid.id,
+            start_time: start_time.timestamp(),
+            end_time: end_time.timestamp(),
+            break_time,
+        }).unwrap();
+        assert_eq!(added_record.user_id, test_uid.id);
+        assert_eq!(added_record.start_time, start_time_naive);
+        assert_eq!(added_record.end_time, end_time_naive);
+        assert_eq!(added_record.break_time, break_time);
+
+        let records_by_user = attendance_driver.get_records(records_get::InputData {
+            user_id: test_uid.id,
+            page: 1,
+            count: 1,
+        }).unwrap();
+        assert_eq!(records_by_user.len(), 1);
+        let record_by_user = records_by_user.first().unwrap();
+        assert_eq!(record_by_user.user_id, test_uid.id);
+        assert_eq!(record_by_user.start_time, start_time_naive);
+        assert_eq!(record_by_user.end_time, end_time_naive);
+        assert_eq!(record_by_user.break_time, break_time);
     }
 }

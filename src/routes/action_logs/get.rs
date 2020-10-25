@@ -1,5 +1,5 @@
 use crate::database_utils::pool::DbPool;
-use crate::driver::attendance_records::ActionRecordDriver;
+use crate::driver::attendance_records::AttendanceRecordDriver;
 use crate::usecase::attendance_records::records_get::{self, InputData};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
@@ -28,7 +28,7 @@ pub async fn index(pool: web::Data<DbPool>, item: web::Query<GetParams>) -> Http
     let connection = pool
         .get()
         .expect("couldn't get driver connection from pool");
-    let action_driver = ActionRecordDriver::new(&connection);
+    let action_driver = AttendanceRecordDriver::new(&connection);
 
     match records_get::execute(action_driver, item.to_input_data()) {
         Ok(action_records) => HttpResponse::Created().json(action_records),
