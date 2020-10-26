@@ -1,8 +1,10 @@
 build:
   docker:
-    release:
+    web:
       dockerfile: Dockerfile
-      target: release-stage
-    web: Dockerfile
+      target: production
+release:
+  command:
+    - diesel setup
 run:
   web: /api/my_app
