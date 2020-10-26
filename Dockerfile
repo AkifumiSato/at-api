@@ -4,6 +4,12 @@ WORKDIR /app
 COPY . .
 RUN cargo build --release
 
+# release
+FROM build-stage as release-stage
+WORKDIR /app
+RUN cargo install diesel_cli
+CMD ["diesel setup"]
+
 # production
 FROM scratch as production
 COPY --from=build-stage /app/target/release/my_app /api

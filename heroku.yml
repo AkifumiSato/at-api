@@ -3,10 +3,8 @@ build:
     web:
       dockerfile: Dockerfile
       target: production
-    worker: worker/Dockerfile
-release:
-  image: worker
-  command:
-    - diesel setup
+    release:
+      dockerfile: Dockerfile
+      target: builder
 run:
   web: /api/my_app
