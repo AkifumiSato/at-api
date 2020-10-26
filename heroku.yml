@@ -3,10 +3,12 @@ build:
     web:
       dockerfile: Dockerfile
       target: production
-    release:
+    migration:
       dockerfile: Dockerfile
       target: build-stage
-      command:
-        - diesel setup
+release:
+  image: migration
+  command:
+    - diesel setup
 run:
   web: /api/my_app
