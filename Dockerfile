@@ -5,7 +5,7 @@ COPY . .
 RUN cargo build --release
 RUN cargo install diesel_cli
 EXPOSE 8088
-CMD ["/api/my_app"]
+CMD ["diesel setup", "&&", "/api/my_app"]
 
 # database
 FROM postgres:11-alpine AS db

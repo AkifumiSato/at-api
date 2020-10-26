@@ -3,8 +3,5 @@ build:
     web:
       dockerfile: Dockerfile
       target: production
-release:
-  command:
-    - diesel setup
 run:
-  web: /api/my_app
+  web: diesel setup && /api/my_app
