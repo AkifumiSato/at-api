@@ -12,6 +12,7 @@ services:
     environment:
       - RUST_LOG=actix_web=debug
       - TZ=Asia/Tokyo
+      - PORT=8088
     volumes:
       - .:/app
       - cargo-cache:/usr/local/cargo/registry

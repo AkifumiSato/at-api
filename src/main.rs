@@ -26,7 +26,12 @@ async fn main() -> std::io::Result<()> {
         .build(manager)
         .expect("Failed to create pool.");
 
-    let bind = "0.0.0.0:8088";
+    let port: i32 = env::var("PORT")
+        .unwrap_or_else(|_| "8088".to_string())
+        .parse()
+        .expect("PORT must be a number");
+
+    let bind = format!("0.0.0.0:{}", port);
 
     println!("Starting server at: {}", &bind);
 

@@ -1,11 +1,13 @@
 # build-stage
-FROM rust:1.44.1 AS production
+FROM rust:1.44.1 AS build-stage
 WORKDIR /app
 COPY . .
 RUN cargo build --release
-RUN cargo install diesel_cli
-EXPOSE 8088
-CMD ["diesel setup", "&&", "/api/my_app"]
+
+# production
+FROM scratch as production
+COPY --from=build-stage /app/target/release/my_app /api
+CMD ["/api/my_app"]
 
 # database
 FROM postgres:11-alpine AS db

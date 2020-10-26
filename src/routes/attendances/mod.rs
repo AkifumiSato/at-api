@@ -1,7 +1,7 @@
+mod delete;
 mod get;
 mod patch;
 mod post_record;
-mod delete;
 
 use actix_web::web;
 
