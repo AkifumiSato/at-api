@@ -4,7 +4,7 @@ services:
   backend:
     build:
       context: .
-      target: 'develop-stage'
+      target: 'develop'
     ports:
       - "8088:8088"
     depends_on:
