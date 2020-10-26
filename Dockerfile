@@ -11,8 +11,12 @@ COPY . .
 
 # build-stage
 FROM rust:1.44.1-slim-stretch as build-stage
-RUN cargo install diesel_cli
 RUN cargo build --release
+
+# release-stage
+FROM build-stage as release-stage
+RUN cargo install diesel_cli
+RUN diesel setup
 
 # production
 FROM scratch as production
