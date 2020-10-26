@@ -10,5 +10,3 @@ release:
   image: migration
   command:
     - diesel setup
-run:
-  web: /bin/my_app

@@ -9,7 +9,7 @@ RUN cargo install diesel_cli
 FROM scratch as production
 WORKDIR /bin
 COPY --from=build-stage /app/target/release/my_app .
-CMD ["my_app"]
+ENTRYPOINT ["my_app"]
 
 # database
 FROM postgres:11-alpine AS db
