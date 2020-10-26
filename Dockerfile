@@ -8,7 +8,7 @@ RUN cargo build --release
 FROM build-stage as release-stage
 WORKDIR /app
 RUN cargo install diesel_cli
-CMD ["diesel setup"]
+RUN ["/bin/bash", "-c", "diesel setup"]
 
 # production
 FROM scratch as production

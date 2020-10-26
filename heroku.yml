@@ -5,6 +5,6 @@ build:
       target: production
     release:
       dockerfile: Dockerfile
-      target: builder
+      target: release-stage
 run:
   web: /api/my_app
