@@ -6,8 +6,8 @@ RUN cargo build --release
 RUN cargo install diesel_cli
 
 # production
-FROM scratch as production
-WORKDIR /bin
+FROM busybox as production
+WORKDIR /dist
 COPY --from=build-stage /app/target/release/my_app .
 ENTRYPOINT ["my_app"]
 
