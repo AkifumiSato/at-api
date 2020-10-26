@@ -1,14 +1,15 @@
+# release
+FROM rust:1.44.1 AS release-stage
+WORKDIR /migration_tmp
+COPY . .
+RUN cargo install diesel_cli
+RUN ["/bin/bash", "-c", "diesel setup"]
+
 # build-stage
 FROM rust:1.44.1 AS build-stage
 WORKDIR /app
 COPY . .
 RUN cargo build --release
-
-# release
-FROM build-stage as release-stage
-WORKDIR /app
-RUN cargo install diesel_cli
-RUN ["/bin/bash", "-c", "diesel setup"]
 
 # production
 FROM scratch as production
