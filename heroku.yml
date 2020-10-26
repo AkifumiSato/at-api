@@ -2,12 +2,5 @@ build:
   docker:
     web: Dockerfile
     target: production
-    worker:
-      dockerfile: Dockerfile
-      target: release-stage
-  release:
-    image: worker
-    command:
-      - diesel setup
 run:
   web: /api/my_app
