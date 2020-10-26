@@ -11,4 +11,4 @@ release:
   command:
     - diesel setup
 run:
-  web: /api/my_app
+  web: my_app
