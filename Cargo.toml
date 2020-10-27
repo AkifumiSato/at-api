@@ -16,7 +16,3 @@ chrono = { version = "0.4.0", features = ["serde"] }
 diesel = { version = "1.4.4", features = ["postgres", "r2d2", "chrono"] }
 r2d2 = "0.8"
 dotenv = "0.15.0"
-
-[profile.release]
-opt-level = 0
-overflow-checks = false

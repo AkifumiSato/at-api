@@ -14,7 +14,9 @@ RUN cargo build --release
 RUN cargo install diesel_cli
 
 # production
-FROM gcr.io/distroless/cc-debian10 AS production
+FROM debian:buster-slim AS production
+RUN apt-get update
+RUN apt-get install libpq-dev -y
 COPY --from=build-stage /app/at-api/target/release/at-api .
 CMD ["./at-api"]
 
