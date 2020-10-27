@@ -1,12 +1,12 @@
-extern crate my_app;
+extern crate at_api;
 
 use actix_ratelimit::errors::ARError::IdentificationError;
 use actix_ratelimit::{MemoryStore, MemoryStoreActor, RateLimiter};
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use diesel::pg::PgConnection;
 use diesel::r2d2::{self, ConnectionManager};
-use my_app::database_utils::pool::env_database_url;
-use my_app::routes;
+use at_api::database_utils::pool::env_database_url;
+use at_api::routes;
 use std::env;
 use std::time::Duration;
 

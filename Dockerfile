@@ -1,30 +1,22 @@
 # build-stage
 FROM rust:1.44.1 AS build-stage
 
-RUN apt-get update
-RUN apt-get install musl-tools -y
-RUN rustup target add x86_64-unknown-linux-musl
-
 WORKDIR /app
 
-RUN USER=root cargo new my_app
-WORKDIR /app/my_app
+RUN USER=root cargo new at-api
+WORKDIR /app/at-api
 
 COPY Cargo.toml Cargo.lock ./
-RUN RUSTFLAGS=-Clinker=musl-gcc cargo build --release --target=x86_64-unknown-linux-musl
-
-RUN rm -f target/x86_64-unknown-linux-musl/release/deps/my_app*
-
+RUN cargo build --release
 COPY . .
-RUN RUSTFLAGS=-Clinker=musl-gcc cargo build --release --target=x86_64-unknown-linux-musl
-
+RUN rm ./target/release/deps/at_api*
+RUN cargo build --release
 RUN cargo install diesel_cli
 
 # production
-FROM alpine:latest AS production
-COPY --from=build-stage /app/my_app/target/x86_64-unknown-linux-musl/release/my_app /usr/local/bin/my_app
-CMD ["my_app"]
-
+FROM gcr.io/distroless/cc-debian10 AS production
+COPY --from=build-stage /app/at-api/target/release/at-api .
+CMD ["./at-api"]
 
 # database
 FROM postgres:11-alpine AS db

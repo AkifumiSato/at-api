@@ -360,6 +360,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "at-api"
+version = "0.1.0"
+dependencies = [
+ "actix-ratelimit",
+ "actix-rt",
+ "actix-web",
+ "chrono",
+ "diesel",
+ "dotenv",
+ "env_logger",
+ "r2d2",
+ "serde",
+]
+
+[[package]]
 name = "atty"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1143,21 +1158,6 @@ dependencies = [
  "net2",
  "winapi 0.2.8",
  "ws2_32-sys",
-]
-
-[[package]]
-name = "my_app"
-version = "0.1.0"
-dependencies = [
- "actix-ratelimit",
- "actix-rt",
- "actix-web",
- "chrono",
- "diesel",
- "dotenv",
- "env_logger",
- "r2d2",
- "serde",
 ]
 
 [[package]]

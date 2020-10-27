@@ -19,7 +19,7 @@ pub fn env_database_url() -> String {
 /// use actix_web::{Error, http, web};
 /// use diesel::r2d2::{self, ConnectionManager};
 /// use diesel::pg::PgConnection;
-/// use my_app::database_utils::pool::{env_database_url, TestTransaction, DbPool};
+/// use at_api::database_utils::pool::{env_database_url, TestTransaction, DbPool};
 ///
 /// let manager = ConnectionManager::<PgConnection>::new(env_database_url());
 /// let pool_builder = r2d2::Pool::<ConnectionManager<PgConnection>>::builder()
